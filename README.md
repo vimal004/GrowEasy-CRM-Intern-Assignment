@@ -471,7 +471,7 @@ Dataset: tests/comprehensive_edge_cases.csv (21 rows, 15 columns)
 | 19 | Source fuzzy match: invalid string | ✅ `""` (blank fallback) |
 
 ```
-📊 METRICS: Imported: 20 / 21 · Skipped: 1 · Success Rate: 95% · Time: 771ms
+📊 METRICS: Imported: 20 / 21 · Skipped: 1 · Success Rate: 95% · Time: 423ms
 ```
 
 ### Error Response Verification

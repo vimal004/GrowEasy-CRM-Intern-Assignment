@@ -6,7 +6,7 @@ Dataset: tests/comprehensive_edge_cases.csv
 
 [1/3] Checking API Deployed Health...
 [0;32mSUCCESS: API is online (HTTP 200)[0m
-{"status":"UP","timestamp":"2026-07-07T13:15:35.876Z"}
+{"status":"UP","timestamp":"2026-07-07T13:43:13.978Z"}
 
 [2/3] Testing Upload Preview Endpoint...
 [0;32mSUCCESS: Preview generated successfully (HTTP 200)[0m
@@ -24,7 +24,7 @@ Headers: ['created_at', 'name', 'email', 'country_code', 'mobile_without_country
 Imported count: 20
 Skipped count: 1
 Success rate: 95%
-Processing time: 771ms
+Processing time: 423ms
 
 ==================================================
 🕵️‍♀️ VERIFYING TARGET CONSTRAINTS & EDGE CASES
@@ -33,7 +33,7 @@ Processing time: 771ms
 2. ISO with Slash Date -> 2026-05-13T14:20:48.000Z
 3. Epoch Date -> 2026-05-14T08:30:48.000Z
 4. DD/MM/YYYY Date -> 2026-05-13T00:00:00.000Z
-5. Invalid Date Fallback -> 2026-07-07T13:15:37.938Z
+5. Invalid Date Fallback -> 2026-07-07T13:43:15.230Z
 
 6. Formula Escaped Name (=) -> Formula Injection =
 7. Formula Escaped Name (+) -> Formula Injection +
