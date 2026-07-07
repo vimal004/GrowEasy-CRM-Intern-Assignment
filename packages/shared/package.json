@@ -2,8 +2,11 @@
   "name": "@groweasy/shared",
   "version": "1.0.0",
   "private": true,
-  "main": "src/utils/index.ts",
-  "types": "src/utils/index.ts",
+  "main": "dist/utils/index.js",
+  "types": "dist/utils/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "zod": "^3.22.4"
   },

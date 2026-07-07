@@ -5,7 +5,7 @@ services:
     env: node
     plan: free
     rootDir: .
-    buildCommand: pnpm install --prod=false && pnpm --filter api build
+    buildCommand: pnpm install --prod=false && pnpm --filter @groweasy/shared build && pnpm --filter api build
     startCommand: pnpm --filter api start
     envVars:
       - key: PORT
@@ -30,7 +30,7 @@ services:
     env: node
     plan: free
     rootDir: .
-    buildCommand: pnpm install --prod=false && pnpm --filter web build
+    buildCommand: pnpm install --prod=false && pnpm --filter @groweasy/shared build && pnpm --filter web build
     startCommand: pnpm --filter web start
     envVars:
       - key: NODE_ENV
