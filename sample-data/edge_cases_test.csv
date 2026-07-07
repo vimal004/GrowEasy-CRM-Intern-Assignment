@@ -1,0 +1,6 @@
+Date_Registered,Client_Name,MailBox,Ph_No,Org,CityName,StateCode,CountryRegion,OwnerEmail,StatusText,SourceChannel,PossessionTimeframe,ShortDescription
+"13/05/2026","Clean Lead","clean@example.com","+91 9988776655","Acme Corp","Mumbai","MH","India","owner@groweasy.ai","GOOD_LEAD_FOLLOW_UP","leads_on_demand","Ready to move","A standard correct lead"
+"14/05/2026","No Contacts Lead","","","Missing Corp","Delhi","DL","India","","GOOD_LEAD_FOLLOW_UP","eden_park","","Should be skipped because no email/phone"
+"May 15, 2026","Multiple Contacts Lead","primary@example.com, secondary@example.com","9876543210 / 022-1234567","Multicorp","Pune","MH","India","owner@groweasy.ai","SALE_DONE","sarjapur_plots","","Has multiple emails and phones"
+"16/05/2026","=CMD(CSV_Injection)","injection@example.com","+91 9123456789","Formula Inc","Chennai","TN","India","owner@groweasy.ai","good follow up","varah_swamy","","Name starts with = and phone starts with +"
+"17/05/2026","Messy Lead","messy@example.com","9999911111","Messy Corp","Bangalore","KA","India","owner@groweasy.ai","junk lead","facebook ads","","Status is messy, source is invalid"

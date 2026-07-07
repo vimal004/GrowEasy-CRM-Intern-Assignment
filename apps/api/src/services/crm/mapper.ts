@@ -114,17 +114,23 @@ export function mapToCrmLead(
     return escapeCsvInjection(escapeLineBreaks(val.trim()));
   };
 
+  // Sanitize without CSV injection escaping (for fields that legitimately start with +, like country_code)
+  const sanitizeNoInjection = (val: string | undefined, defaultVal: string = ''): string => {
+    if (val === undefined || val === null) return defaultVal;
+    return escapeLineBreaks(val.trim());
+  };
+
   const lead: LeadCrm = {
     created_at: formatDate(raw.created_at || ''),
     name: sanitize(raw.name, 'Unnamed Lead'),
-    email: sanitize(firstEmail),
-    country_code: sanitize(countryCode, '+91'),
+    email: sanitizeNoInjection(firstEmail),
+    country_code: sanitizeNoInjection(countryCode, '+91'),
     mobile_without_country_code: cleanMobile,
     company: sanitize(raw.company, 'N/A'),
     city: sanitize(raw.city, 'N/A'),
     state: sanitize(raw.state, 'N/A'),
     country: sanitize(raw.country, 'N/A'),
-    lead_owner: sanitize(raw.lead_owner, 'system@groweasy.ai'),
+    lead_owner: sanitizeNoInjection(raw.lead_owner, 'system@groweasy.ai'),
     crm_status: crmStatus,
     crm_note: sanitize(compiledNote),
     data_source: dataSource,
@@ -134,3 +140,4 @@ export function mapToCrmLead(
 
   return { lead };
 }
+

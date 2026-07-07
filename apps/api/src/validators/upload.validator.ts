@@ -34,6 +34,7 @@ export function validateCsvUpload(file: Express.Multer.File | undefined): void {
     'text/comma-separated-values',
     'text/x-comma-separated-values',
     'text/plain', // fallback since raw text is common
+    'application/octet-stream', // some clients/browsers send CSVs with this MIME type
   ];
 
   if (!allowedMimes.includes(file.mimetype)) {

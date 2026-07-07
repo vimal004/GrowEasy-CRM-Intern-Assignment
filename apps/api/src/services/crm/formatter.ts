@@ -53,7 +53,8 @@ export function cleanMobileNumber(phone: string, countryCode: string): string {
 /**
  * Safe date parsing to ISO-8601 string.
  * Ensures new Date(created_at) is never an Invalid Date.
- * If the input is invalid, returns the current ISO timestamp as a fallback.
+ * Handles DD/MM/YYYY and DD-MM-YYYY formats that Date.parse() can't handle natively.
+ * If the input is truly invalid, returns the current ISO timestamp as a fallback.
  * 
  * @param dateStr Raw date string.
  * @returns Valid ISO-8601 date string.
@@ -61,11 +62,34 @@ export function cleanMobileNumber(phone: string, countryCode: string): string {
 export function formatDate(dateStr: string): string {
   if (!dateStr) return new Date().toISOString();
   
-  const parsed = Date.parse(dateStr.trim());
-  if (isNaN(parsed)) {
-    logger.warn(`Could not parse date "${dateStr}". Falling back to current time.`);
-    return new Date().toISOString();
+  const trimmed = dateStr.trim();
+
+  // 1. Try DD/MM/YYYY or DD-MM-YYYY (day > 12 confirms DD/MM order)
+  const ddMmYyyyMatch = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(.*)$/);
+  if (ddMmYyyyMatch) {
+    const [, dayOrMonth, monthOrDay, year, timePart] = ddMmYyyyMatch;
+    const a = parseInt(dayOrMonth, 10);
+    const b = parseInt(monthOrDay, 10);
+
+    // If first number > 12, it must be a day (DD/MM/YYYY)
+    // If second number > 12, it must be a day (MM/DD/YYYY — standard US, Date.parse handles this)
+    // If both ≤ 12, assume DD/MM/YYYY (non-US convention, common in India/Europe)
+    if (a > 12 || (a <= 12 && b <= 12)) {
+      // Treat as DD/MM/YYYY → rewrite to YYYY-MM-DD for reliable parsing
+      const isoStr = `${year}-${String(b).padStart(2, '0')}-${String(a).padStart(2, '0')}${timePart || ''}`;
+      const parsed = Date.parse(isoStr);
+      if (!isNaN(parsed)) {
+        return new Date(parsed).toISOString();
+      }
+    }
   }
 
-  return new Date(parsed).toISOString();
+  // 2. Standard Date.parse (handles ISO-8601, "May 15, 2026", "2026-05-13 14:20:48", etc.)
+  const parsed = Date.parse(trimmed);
+  if (!isNaN(parsed)) {
+    return new Date(parsed).toISOString();
+  }
+
+  logger.warn(`Could not parse date "${dateStr}". Falling back to current time.`);
+  return new Date().toISOString();
 }
