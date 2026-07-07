@@ -13,7 +13,7 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional().default(''),
   GROQ_API_KEY: z.string().optional().default(''),
   LLM_PROVIDER: z.enum(['openai', 'gemini', 'groq', 'mock']).optional(),
-  BATCH_SIZE: z.coerce.number().int().positive().default(25),
+  BATCH_SIZE: z.coerce.number().int().positive().default(10),
   MAX_FILE_SIZE: z.coerce.number().int().positive().default(5242880), // 5MB in bytes
 });
 
