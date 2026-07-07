@@ -65,6 +65,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // 5. Mount Routes
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).send('Welcome to the GrowEasy CRM AI CSV Importer API!');
+});
+
 app.use('/api', uploadRouter);
 
 // 6. Global Error Handling Middleware

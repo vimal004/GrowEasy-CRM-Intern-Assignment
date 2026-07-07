@@ -1,6 +1,22 @@
 import { CSVMetadata, ImportResult } from '@groweasy/shared';
 
-const BACKEND_URL = 'http://127.0.0.1:8080';
+const getBackendUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    // In local dev, use the local IPv4 port
+    if (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.includes('192.168.')
+    ) {
+      return 'http://127.0.0.1:8080';
+    }
+    // In production on Render, point directly to the deployed backend service
+    return 'https://groweasy-crm-api.onrender.com';
+  }
+  return 'http://127.0.0.1:8080';
+};
+
+const BACKEND_URL = getBackendUrl();
 
 export interface ProcessingUpdate {
   stage: string;
