@@ -7,7 +7,7 @@ import { UploadDropzone } from '../features/upload/components/UploadDropzone';
 import { PreviewTable } from '../features/preview/components/PreviewTable';
 import { UploadProgress } from '../features/processing/components/UploadProgress';
 import { ResultsDashboard } from '../features/results/components/ResultsDashboard';
-import { parseCsvPreview } from '../services/mockApi';
+import { parseCsvPreview } from '../services/api';
 import { CSVMetadata, ImportResult } from '@groweasy/shared';
 
 const WIZARD_STEPS = [

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Terminal, AlertCircle, RefreshCw } from 'lucide-react';
-import { simulateImport, ProcessingUpdate } from '../../../services/mockApi';
+import { simulateImport, ProcessingUpdate } from '../../../services/api';
 import { ImportResult } from '@groweasy/shared';
 import { Card, CardContent } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
