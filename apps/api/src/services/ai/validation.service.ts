@@ -4,24 +4,38 @@ import { LLMProvider } from './providers/provider.interface';
 import { AIError } from '../../utils/errors';
 import { logger } from '../../config/logger';
 
-// Zod schema for validating the raw LLM output before final mapping
+const cleanStringSchema = z.preprocess(
+  (val) => (val === null || val === undefined ? '' : val),
+  z.coerce.string()
+).catch('').default('');
+
+const arrayPreprocess = z.preprocess(
+  (val) => (typeof val === 'string' ? [val] : val),
+  z.array(z.coerce.string())
+).catch([]).default([]);
+
+const recordPreprocess = z.preprocess(
+  (val) => (val && typeof val === 'object' && !Array.isArray(val) ? val : {}),
+  z.record(z.any())
+).catch({}).default({});
+
 export const RawExtractedLeadSchema = z.object({
-  created_at: z.coerce.string().catch('').default(''),
-  name: z.coerce.string().catch('').default(''),
-  emails: z.array(z.coerce.string()).catch([]).default([]),
-  mobiles: z.array(z.coerce.string()).catch([]).default([]),
-  company: z.coerce.string().catch('').default(''),
-  city: z.coerce.string().catch('').default(''),
-  state: z.coerce.string().catch('').default(''),
-  country: z.coerce.string().catch('').default(''),
-  country_code: z.coerce.string().catch('').default(''),
-  lead_owner: z.coerce.string().catch('').default(''),
-  crm_status: z.coerce.string().catch('').default(''),
-  data_source: z.coerce.string().catch('').default(''),
-  possession_time: z.coerce.string().catch('').default(''),
-  description: z.coerce.string().catch('').default(''),
-  crm_note: z.coerce.string().catch('').default(''),
-  unmapped_data: z.record(z.any()).catch({}).default({}),
+  created_at: cleanStringSchema,
+  name: cleanStringSchema,
+  emails: arrayPreprocess,
+  mobiles: arrayPreprocess,
+  company: cleanStringSchema,
+  city: cleanStringSchema,
+  state: cleanStringSchema,
+  country: cleanStringSchema,
+  country_code: cleanStringSchema,
+  lead_owner: cleanStringSchema,
+  crm_status: cleanStringSchema,
+  data_source: cleanStringSchema,
+  possession_time: cleanStringSchema,
+  description: cleanStringSchema,
+  crm_note: cleanStringSchema,
+  unmapped_data: recordPreprocess,
 }).passthrough();
 
 export const RawExtractedLeadsSchema = z.array(RawExtractedLeadSchema);
@@ -93,53 +107,6 @@ export async function validateAndRepair(
           if (Array.isArray(item)) {
             item = item[0] || {};
           }
-
-          // 5. Force strict type-coercion to guarantee Zod schema validation success
-          // Ensure emails is string[]
-          if (item.emails !== undefined && item.emails !== null) {
-            if (typeof item.emails === 'string') {
-              item.emails = [item.emails];
-            } else if (!Array.isArray(item.emails)) {
-              item.emails = [];
-            }
-          } else {
-            item.emails = [];
-          }
-
-          // Ensure mobiles is string[]
-          if (item.mobiles !== undefined && item.mobiles !== null) {
-            if (typeof item.mobiles === 'string') {
-              item.mobiles = [item.mobiles];
-            } else if (!Array.isArray(item.mobiles)) {
-              item.mobiles = [];
-            }
-          } else {
-            item.mobiles = [];
-          }
-
-          // Ensure unmapped_data is Record<string, any>
-          if (item.unmapped_data !== undefined && item.unmapped_data !== null) {
-            if (typeof item.unmapped_data !== 'object' || Array.isArray(item.unmapped_data)) {
-              item.unmapped_data = {};
-            }
-          } else {
-            item.unmapped_data = {};
-          }
-
-          // Force basic text fields to string
-          const textFields = [
-            'created_at', 'name', 'company', 'city', 'state', 'country',
-            'country_code', 'lead_owner', 'crm_status', 'data_source',
-            'possession_time', 'description', 'crm_note'
-          ];
-          textFields.forEach(field => {
-            if (item[field] !== undefined && item[field] !== null) {
-              item[field] = String(item[field]);
-            } else {
-              item[field] = '';
-            }
-          });
-
           return item;
         });
     }

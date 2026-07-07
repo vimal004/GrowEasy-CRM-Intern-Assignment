@@ -232,6 +232,13 @@ export async function runImportPipeline(
         const extractedLead = llmResults[batchIdx];
         if (extractedLead) {
           const key = getRecordCacheKey(entry.record);
+          // Cap cache size at 1000 entries to prevent memory leaks in production
+          if (llmCache.size >= 1000) {
+            const oldestKey = llmCache.keys().next().value;
+            if (oldestKey) {
+              llmCache.delete(oldestKey);
+            }
+          }
           llmCache.set(key, {
             value: extractedLead,
             expiresAt: Date.now() + CACHE_TTL_MS,

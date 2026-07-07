@@ -111,7 +111,7 @@ groweasy-crm-csv-importer/
 - **Drag & Drop Upload** — Beautiful dropzone with file validation, size limits, and type checking
 - **CSV Preview Table** — Responsive table with sticky headers, horizontal/vertical scrolling
 - **4-Step Wizard** — Upload → Preview → AI Processing → Results, with smooth Framer Motion transitions
-- **Real-Time Progress** — Animated progress indicators during AI processing with live log output
+- **Optimistic Progress Simulation** — Custom Zeno's decay progress bar reporting optimistic pipeline stages and simulated logs while waiting for backend results
 - **Results Dashboard** — Imported and skipped records displayed in interactive tables with statistics
 - **Dark Mode** — Full dark/light theme toggle with system preference detection
 - **Loading States** — Elegant spinners, skeleton loaders, and error handling throughout

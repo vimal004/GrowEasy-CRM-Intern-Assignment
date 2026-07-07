@@ -189,10 +189,10 @@ export function UploadDropzone({ onFileAccepted }: UploadDropzoneProps) {
           },
           {
             icon: ShieldCheck,
-            title: 'Virtualized Results Grid',
+            title: 'Interactive Results Grid',
             desc: (
               <>
-                Renders thousands of leads instantly with <strong className="text-on-background font-bold">sticky headers</strong>, column toggles, quick search filters, and raw row-level exclusions.
+                Renders leads instantly with <strong className="text-on-background font-bold">sticky headers</strong>, column toggles, quick search filters, paginator, and row-level exclusions.
               </>
             ),
           },

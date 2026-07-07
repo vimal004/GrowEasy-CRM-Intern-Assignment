@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Papa from 'papaparse';
 import {
   useReactTable,
   getCoreRowModel,
@@ -103,25 +104,39 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
     const records = result.importedRecords;
     if (records.length === 0) return;
 
-    const headers = Object.keys(records[0]) as (keyof LeadCrm)[];
-    const csvRows = [
-      headers.join(','), // Header row
-      ...records.map((row) =>
-        headers
-          .map((fieldName) => {
-            const val = row[fieldName];
-            // Format string: escape double quotes, wrap in quotes if spaces/commas exist
-            const valStr = val === undefined || val === null ? '' : String(val);
-            const escaped = valStr.replace(/"/g, '""');
-            return escaped.includes(',') || escaped.includes('\n') || escaped.includes('"')
-              ? `"${escaped}"`
-              : escaped;
-          })
-          .join(',')
-      ),
-    ];
+    // Standard CRM headers in fixed, reliable order
+    const headers = [
+      'created_at',
+      'name',
+      'email',
+      'country_code',
+      'mobile_without_country_code',
+      'company',
+      'city',
+      'state',
+      'country',
+      'lead_owner',
+      'crm_status',
+      'crm_note',
+      'data_source',
+      'possession_time',
+      'description',
+    ] as (keyof LeadCrm)[];
 
-    const blob = new Blob([csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const csvData = records.map((row) => {
+      const mappedRow: Record<string, any> = {};
+      headers.forEach((h) => {
+        mappedRow[h] = row[h];
+      });
+      return mappedRow;
+    });
+
+    const csv = Papa.unparse({
+      fields: headers,
+      data: csvData,
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
