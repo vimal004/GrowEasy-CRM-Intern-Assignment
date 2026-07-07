@@ -461,13 +461,13 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
             <table className="w-full text-left border-collapse min-w-max">
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id} className="border-b border-border bg-background sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
+                  <tr key={headerGroup.id} className="border-b border-border">
                     {headerGroup.headers.map((header) => (
                       <th
                         key={header.id}
                         onClick={header.column.getToggleSortingHandler()}
                         className={cn(
-                          'px-6 py-3 font-semibold text-xs leading-none select-none',
+                          'px-6 py-3 font-semibold text-xs leading-none select-none bg-background sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]',
                           header.column.getCanSort() ? 'cursor-pointer hover:bg-on-background/5 transition-colors' : ''
                         )}
                       >
@@ -588,10 +588,10 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
           <div className="overflow-x-auto w-full max-h-[440px] overflow-y-auto">
             <table className="w-full text-left border-collapse min-w-max">
               <thead>
-                <tr className="border-b border-border bg-background sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
-                  <th className="px-6 py-3 font-semibold text-xs text-on-surface/60 uppercase">Row</th>
-                  <th className="px-6 py-3 font-semibold text-xs text-on-surface/60 uppercase">Skipped Reason</th>
-                  <th className="px-6 py-3 font-semibold text-xs text-on-surface/60 uppercase">Raw Record Excerpt</th>
+                <tr className="border-b border-border">
+                  <th className="px-6 py-3 font-semibold text-xs text-on-surface/60 uppercase bg-background sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">Row</th>
+                  <th className="px-6 py-3 font-semibold text-xs text-on-surface/60 uppercase bg-background sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">Skipped Reason</th>
+                  <th className="px-6 py-3 font-semibold text-xs text-on-surface/60 uppercase bg-background sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">Raw Record Excerpt</th>
                 </tr>
               </thead>
               <tbody>

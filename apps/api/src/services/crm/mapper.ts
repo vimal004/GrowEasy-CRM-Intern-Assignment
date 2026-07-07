@@ -42,7 +42,7 @@ export function mapToCrmLead(
   const firstEmail = firstEmailRaw.split(/[,;\s]+/)[0]?.trim() || '';
 
   const firstPhoneRaw = (mobiles[0] || '').trim();
-  const firstPhone = firstPhoneRaw.split(/[,;\/\s]+/)[0]?.trim() || '';
+  const firstPhone = firstPhoneRaw.split(/[,;\/]+/)[0]?.trim() || '';
 
   const countryCode = (raw.country_code || '+91').trim();
   let cleanMobile = cleanMobileNumber(firstPhone, countryCode);

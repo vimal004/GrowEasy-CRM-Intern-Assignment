@@ -155,9 +155,9 @@ export function PreviewTable({ metadata, previewRows, onConfirm, onCancel }: Pre
           <table className="w-full text-left border-collapse min-w-max">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b border-border bg-background sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
+                <tr key={headerGroup.id} className="border-b border-border">
                   {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="px-6 py-3 font-semibold text-xs leading-none">
+                    <th key={header.id} className="px-6 py-3 font-semibold text-xs leading-none bg-background sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
                       {flexRender(header.column.columnDef.header, header.getContext())}
                     </th>
                   ))}
