@@ -1,0 +1,13 @@
+created_at,name,email,country_code,mobile_without_country_code,company,city,state,country,lead_owner,crm_status,crm_note,data_source,possession_time,description
+"2026-07-01 10:00:00","=CMD(dangerous)","inj1@example.com","+91","9876543210","=Formula Corp","Mumbai","MH","India","owner@groweasy.ai","GOOD_LEAD_FOLLOW_UP","=HYPERLINK(""http://evil.com"",""click"")","leads_on_demand","","CSV injection test using ="
+"2026-07-01 10:00:00","+Plus Name","inj2@example.com","+91","9876543211","+Plus Corp","Mumbai","MH","India","owner@groweasy.ai","GOOD_LEAD_FOLLOW_UP","+HYPERLINK","leads_on_demand","","CSV injection test using +"
+"2026-07-01 10:00:00","-Minus Name","inj3@example.com","+91","9876543212","-Minus Corp","Mumbai","MH","India","owner@groweasy.ai","GOOD_LEAD_FOLLOW_UP","-HYPERLINK","leads_on_demand","","CSV injection test using -"
+"2026-07-01 10:00:00","@At Name","inj4@example.com","+91","9876543213","@At Corp","Mumbai","MH","India","owner@groweasy.ai","GOOD_LEAD_FOLLOW_UP","@HYPERLINK","leads_on_demand","","CSV injection test using @"
+"2026-07-01 10:00:00","Line Break Name","break@example.com","+91","9876543214","Acme
+Corp","Mumbai
+City","MH
+State","India","owner@groweasy.ai","GOOD_LEAD_FOLLOW_UP","This note contains
+newlines that must be escaped.","leads_on_demand","","Row contains carriage return and newlines inside fields"
+"2026-07-01 10:00:00","Oversized Mobile Lead","oversized_phone@example.com","+91","98765432109876543210","Oversized Co","Mumbai","MH","India","","GOOD_LEAD_FOLLOW_UP","Mobile number exceeds 15 digits (should trigger guard and be blanked)","leads_on_demand","",""
+"2026-07-01 10:00:00","Very Long Text Lead","long@example.com","+91","9876543215","A very long company name that is meant to test the text processing capabilities of the API and verify that there is no crash or truncated output that corrupts the CRM format","Mumbai","MH","India","owner@groweasy.ai","GOOD_LEAD_FOLLOW_UP","A very long note details: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.","leads_on_demand","","Very long description to test payload size stability"
+"2026-07-01 10:00:00","Special Characters *&^%","special@example.com","+91","9876543216","Char Co","Mumbai","MH","India","owner@groweasy.ai","GOOD_LEAD_FOLLOW_UP","Note with !@#$%^&*()_+{}[]|\\:;""'<>,.?/~","leads_on_demand","","Special character values test"

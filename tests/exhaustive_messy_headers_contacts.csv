@@ -1,0 +1,7 @@
+Date_Registered,Client_Name,MailBox,Alt_Email,Ph_No,Alt_Phone,Employer,CityName,StateCode,CountryRegion,OwnerEmail,StatusText,SourceChannel,PossessionTimeframe,ShortDescription
+"13/05/2026","Amit Kumar","amit@example.com","","+91 99887 76655","","Tech Solutions","Mumbai","MH","India","agent@groweasy.ai","GOOD_LEAD_FOLLOW_UP","leads_on_demand","Ready","A standard messy header record"
+"May 14 2026","John Smith","john.smith@gmail.com, john.alt@company.com","","+1 (555) 123-4567; +1-555-987-6543","","Smith & Co","New York","NY","USA","agent@groweasy.ai","sale","eden_park","","Has multiple emails and phone numbers in single fields"
+"2026-05-15","No Main Contacts","","backup@example.com","","9876543210","Alt Co","Pune","MH","India","agent@groweasy.ai","did not connect","varah_swamy","","Has main contacts empty, but alt contacts filled. First alt should be mapped."
+"16-May-2026","LLM Extract Lead","","","","","LLM Co","Bangalore","KA","India","agent@groweasy.ai","GOOD_LEAD_FOLLOW_UP","leads_on_demand","","Contact me at john.doe@llm.com or ring +91 9999988888"
+"17-May-2026","No Contact At All","","","","","Ghost Inc","Delhi","DL","India","","junk","sarjapur_plots","","Neither main nor alt contacts exist - MUST BE SKIPPED"
+"18/05/2026","Priya Patel","priya@example.com","priya.work@example.com","+919876543210","+919876543211, +919876543212","Patel Enterprise","Bangalore","KA","India","agent2@groweasy.ai","good lead","meridian_tower","6 months","Multiple contacts in both main and alternative fields"

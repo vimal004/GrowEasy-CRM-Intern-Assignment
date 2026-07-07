@@ -1,0 +1,109 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TEST GROUP 1: HEALTH & SERVER VALIDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ PASS: GET /health is online (HTTP 200)
+✅ PASS: Health status field confirmed: UP
+✅ PASS: GET /version is online (HTTP 200)
+ℹ️  INFO: Version info: {"name":"groweasy-crm-api","version":"1.0.0"}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TEST GROUP 2: STANDARD FIELD IMPORT (tests/exhaustive_standard_fields.csv)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Uploading tests/exhaustive_standard_fields.csv to /import (AI Pipeline)...
+ℹ️  INFO: Request completed in 12.96 seconds.
+✅ PASS: Standard import succeeded (HTTP 200)
+ℹ️  INFO: Metrics - Imported: 21, Skipped: 1, Success Rate: 95%
+✅ PASS: Correctly imported 21 records
+✅ PASS: Correctly skipped 1 record
+⚠️  WARN: Skipped record has unexpected data: {'rowIndex': 8, 'reason': 'Skipped row 8: contains neither a valid email nor mobile number.', 'rawRecord': {'created_at': '2026-07-01 10:00:00', 'name': 'Skip Lead No Contact', 'email': '', 'country_code': '+91', 'mobile_without_country_code': '', 'company': 'Ghost Corp', 'city': 'Mumbai', 'state': 'MH', 'country': 'India', 'lead_owner': 'owner@groweasy.ai', 'crm_status': 'GOOD_LEAD_FOLLOW_UP', 'crm_note': 'Neither email nor phone - MUST BE SKIPPED', 'data_source': 'leads_on_demand', 'possession_time': '', 'description': ''}}
+✅ PASS: Date parsed correctly for Standard Lead: 2026-07-01T10:00:00.000Z
+✅ PASS: Date parsed correctly for Weird Date DD.MM.YYYY: 2026-05-13T00:00:00.000Z
+✅ PASS: Date parsed correctly for Weird Date YYYY/MM/DD: 2026-05-13T14:20:48.000Z
+✅ PASS: Date parsed correctly for Epoch Date: 2026-05-14T08:30:48.000Z
+✅ PASS: Date parsed correctly for Text Date: 2026-05-13T00:00:00.000Z
+✅ PASS: Date parsed correctly for DD/MM/YYYY Date: 2026-05-13T00:00:00.000Z
+✅ PASS: Date fallback parsed successfully: 2026-07-07T16:18:31.186Z
+✅ PASS: Status mapped correctly for 'Standard Lead': expected 'GOOD_LEAD_FOLLOW_UP', got 'GOOD_LEAD_FOLLOW_UP'
+✅ PASS: Status mapped correctly for 'Fuzzy Status Good': expected 'GOOD_LEAD_FOLLOW_UP', got 'GOOD_LEAD_FOLLOW_UP'
+✅ PASS: Status mapped correctly for 'Fuzzy Status DNC': expected 'DID_NOT_CONNECT', got 'DID_NOT_CONNECT'
+✅ PASS: Status mapped correctly for 'Fuzzy Status Bad': expected 'BAD_LEAD', got 'BAD_LEAD'
+✅ PASS: Status mapped correctly for 'Fuzzy Status Sale': expected 'SALE_DONE', got 'SALE_DONE'
+✅ PASS: Status mapped correctly for 'Invalid Status Fallback': expected '', got ''
+✅ PASS: Source mapped correctly for 'Standard Lead': expected 'leads_on_demand', got 'leads_on_demand'
+✅ PASS: Source mapped correctly for 'Weird Date DD.MM.YYYY': expected 'meridian_tower', got 'meridian_tower'
+✅ PASS: Source mapped correctly for 'Weird Date YYYY/MM/DD': expected 'eden_park', got 'eden_park'
+✅ PASS: Source mapped correctly for 'Epoch Date': expected 'varah_swamy', got 'varah_swamy'
+✅ PASS: Source mapped correctly for 'Text Date': expected 'sarjapur_plots', got 'sarjapur_plots'
+✅ PASS: Source mapped correctly for 'Source Fuzzy Match': expected 'sarjapur_plots', got 'sarjapur_plots'
+✅ PASS: Source mapped correctly for 'Source Invalid Fallback': expected '', got ''
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TEST GROUP 3: MESSY HEADER & MULTI-CONTACT VALIDATION (tests/exhaustive_messy_headers_contacts.csv)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Uploading tests/exhaustive_messy_headers_contacts.csv to /import (AI Pipeline)...
+ℹ️  INFO: Request completed in 0.34 seconds.
+✅ PASS: Messy import succeeded (HTTP 200)
+ℹ️  INFO: Metrics - Imported: 5, Skipped: 1
+✅ PASS: Correctly imported 5 records from messy CSV
+✅ PASS: Correctly skipped 1 record from messy CSV
+⚠️  WARN: Skipped record has unexpected data: {'rowIndex': 5, 'reason': 'Skipped row 5: contains neither a valid email nor mobile number.', 'rawRecord': {'Date_Registered': '17-May-2026', 'Client_Name': 'No Contact At All', 'MailBox': '', 'Alt_Email': '', 'Ph_No': '', 'Alt_Phone': '', 'Employer': 'Ghost Inc', 'CityName': 'Delhi', 'StateCode': 'DL', 'CountryRegion': 'India', 'OwnerEmail': '', 'StatusText': 'junk', 'SourceChannel': 'sarjapur_plots', 'PossessionTimeframe': '', 'ShortDescription': 'Neither main nor alt contacts exist - MUST BE SKIPPED'}}
+✅ PASS: Mapped 'Client_Name' -> name: 'Amit Kumar'
+✅ PASS: Mapped 'MailBox' -> email: 'amit@example.com'
+✅ PASS: Mapped 'Ph_No' -> mobile_without_country_code: '9988776655'
+✅ PASS: Mapped 'Employer' -> company: 'Tech Solutions'
+✅ PASS: Mapped 'CityName' -> city: 'Mumbai'
+✅ PASS: Mapped 'StateCode' -> state: 'MH'
+✅ PASS: Mapped 'CountryRegion' -> country: 'India'
+✅ PASS: Mapped 'OwnerEmail' -> lead_owner: 'agent@groweasy.ai'
+✅ PASS: Mapped 'StatusText' -> crm_status: 'GOOD_LEAD_FOLLOW_UP'
+✅ PASS: Mapped 'SourceChannel' -> data_source: 'leads_on_demand'
+✅ PASS: Mapped 'PossessionTimeframe' -> possession_time: 'Ready'
+✅ PASS: Mapped 'ShortDescription' -> description: 'A standard messy header record'
+ℹ️  INFO: Deduplication Record: John Smith
+✅ PASS: Extracted first email: 'john.smith@gmail.com'
+✅ PASS: Appended extra email 'john.alt@company.com' to crm_note: 'Extra Emails: john.alt@company.com | Extra Phones: +1-555-987-6543'
+✅ PASS: Extracted first phone number: '15551234567'
+✅ PASS: Appended extra phone '+1-555-987-6543' to crm_note
+ℹ️  INFO: Alternative Fallback Record: No Main Contacts
+✅ PASS: Primary email correctly set to empty because Main MailBox was empty
+✅ PASS: Alt phone mapped to primary because main was empty: '9876543210'
+✅ PASS: Alternative email 'backup@example.com' captured in note/metadata: 'Metadata: [Alt_Email: backup@example.com]'
+ℹ️  INFO: LLM Extraction Path Record: LLM Extract Lead
+✅ PASS: LLM correctly extracted email from unstructured text: 'john.doe@llm.com'
+✅ PASS: LLM correctly extracted mobile from unstructured text: '9999988888'
+ℹ️  INFO: Multi Contacts Record: Priya Patel
+✅ PASS: Primary email extracted: 'priya@example.com'
+✅ PASS: Primary phone extracted: '9876543210'
+✅ PASS: Alt email captured in note/metadata: 'Extra Phones: +919876543211, +919876543212 | Metadata: [Alt_Email: priya.work@example.com]'
+✅ PASS: Alt phone numbers captured in notes: 'Extra Phones: +919876543211, +919876543212 | Metadata: [Alt_Email: priya.work@example.com]'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TEST GROUP 4: SECURITY & CORRUPTION STRESS VALIDATION (tests/exhaustive_security_format_corruption.csv)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Uploading tests/exhaustive_security_format_corruption.csv to /import (AI Pipeline)...
+ℹ️  INFO: Request completed in 0.37 seconds.
+✅ PASS: Security import succeeded (HTTP 200)
+✅ PASS: Correctly imported all 8 rows
+✅ PASS: CSV Injection escaped for '=CMD(dangerous)' in name: ''=CMD(dangerous)'
+✅ PASS: CSV Injection escaped for '+Plus Name' in name: ''+Plus Name'
+✅ PASS: CSV Injection escaped for '-Minus Name' in name: ''-Minus Name'
+✅ PASS: CSV Injection escaped for '@At Name' in name: ''@At Name'
+✅ PASS: crm_note is safe from CSV Injection (prefixed or escaped): 'Original Note: =HYPERLINK("http://evil.com","click")'
+ℹ️  INFO: Line Break Escaping Record: Line Break Name
+✅ PASS: Company line break escaped correctly: 'Acme\nCorp'
+✅ PASS: City line break escaped correctly: 'Mumbai\nCity'
+✅ PASS: crm_note line break escaped correctly: 'Original Note: This note contains\nnewlines that must be escaped.'
+✅ PASS: Oversized mobile (>15 digits) correctly blanked out to empty string
+✅ PASS: Processed long company field successfully: 173 chars
+✅ PASS: Processed long crm_note successfully: 407 chars
+✅ PASS: Processed special characters successfully: 'Original Note: Note with !@#$%^&*()_+{}[]|\\:;"'<>,.?/~'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FINAL TEST REPORT SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Total Assertions Checked: 70
+ℹ️  INFO: Passed Assertions: 68
+ℹ️  INFO: Failed Assertions: 0
+ℹ️  INFO: Warnings: 2
+ℹ️  INFO: Assertion Pass Rate: 97.1%
