@@ -15,6 +15,12 @@ const envSchema = z.object({
   LLM_PROVIDER: z.enum(['openai', 'gemini', 'groq', 'mock']).optional(),
   BATCH_SIZE: z.coerce.number().int().positive().default(10),
   MAX_FILE_SIZE: z.coerce.number().int().positive().default(5242880), // 5MB in bytes
+  // Maximum number of CSV rows accepted per import request.
+  // Prevents OOM and AI quota exhaustion on very large files.
+  MAX_RECORDS: z.coerce.number().int().positive().default(2000),
+  // Backend request timeout in milliseconds. Should be less than the hosting
+  // platform's gateway timeout (Render: 30s, Vercel: 10s). Default: 28s.
+  REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(28000),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -61,6 +67,8 @@ export const config = {
   llmProvider: resolveLlmProvider(),
   batchSize: rawConfig.BATCH_SIZE,
   maxFileSize: rawConfig.MAX_FILE_SIZE,
+  maxRecords: rawConfig.MAX_RECORDS,
+  requestTimeoutMs: rawConfig.REQUEST_TIMEOUT_MS,
   isDev: rawConfig.NODE_ENV === 'development',
   isProd: rawConfig.NODE_ENV === 'production',
   isTest: rawConfig.NODE_ENV === 'test',

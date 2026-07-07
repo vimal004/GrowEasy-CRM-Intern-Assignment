@@ -120,8 +120,22 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
       normKey === 'phone2' ||
       normKey === 'mob'
     ) {
-      // Split comma/semicolon/slash separated list
-      const splitPhones = val.split(/[,;\/]+/).map(p => p.trim()).filter(Boolean);
+      // Split on comma, semicolon, slash, or whitespace.
+      // Special care: "+91 9876543210" has a space after the country code — we
+      // must not split that into ["+91", "9876543210"] here because cleanMobileNumber
+      // will strip the CC later. So we only split on whitespace when the segment does
+      // NOT look like a country-code prefix (i.e., starts with "+").
+      const rawSegments = val.split(/[,;\/]+/).map(p => p.trim()).filter(Boolean);
+      const splitPhones: string[] = [];
+      for (const segment of rawSegments) {
+        if (!segment.startsWith('+') && /\s/.test(segment)) {
+          // Space-separated numbers with no country code prefix: split further
+          const spaceParts = segment.split(/\s+/).filter(Boolean);
+          splitPhones.push(...spaceParts);
+        } else {
+          splitPhones.push(segment);
+        }
+      }
       lead.mobiles.push(...splitPhones);
     }
     // 3. Match Country Code

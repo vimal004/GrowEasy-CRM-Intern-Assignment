@@ -42,10 +42,21 @@ export function mapToCrmLead(
   const firstEmail = firstEmailRaw.split(/[,;\s]+/)[0]?.trim() || '';
 
   const firstPhoneRaw = (mobiles[0] || '').trim();
-  const firstPhone = firstPhoneRaw.split(/[,;\/]+/)[0]?.trim() || '';
+  const firstPhone = firstPhoneRaw.split(/[,;\/\s]+/)[0]?.trim() || '';
 
   const countryCode = (raw.country_code || '+91').trim();
-  const cleanMobile = cleanMobileNumber(firstPhone, countryCode);
+  let cleanMobile = cleanMobileNumber(firstPhone, countryCode);
+
+  // Defensive guard: a valid phone number (without country code) should be ≤ 15 digits.
+  // Anything longer is almost certainly a concatenation artifact from the CSV.
+  // Treat it as invalid to prevent corrupt data reaching the CRM.
+  if (cleanMobile.length > 15) {
+    logger.warn(
+      `[Mapper] Row ${index}: Suspicious mobile "${cleanMobile}" (${cleanMobile.length} digits) — ` +
+      `likely a concatenation artifact. Clearing field to prevent CRM data corruption.`
+    );
+    cleanMobile = '';
+  }
 
   // Enforce skip: Skip rows containing no email AND no mobile phone number
   const hasEmail = firstEmail !== '';

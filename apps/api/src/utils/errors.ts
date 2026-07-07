@@ -41,3 +41,24 @@ export class AIError extends BaseError {
     super(message, statusCode, details);
   }
 }
+
+/**
+ * Thrown when a CSV import request exceeds the maximum allowed record count.
+ * Returns HTTP 422 (Unprocessable Entity).
+ */
+export class TooManyRecordsError extends BaseError {
+  constructor(message: string, details?: any) {
+    super(message, 422, details);
+  }
+}
+
+/**
+ * Thrown when backend processing approaches the hosting platform's gateway timeout.
+ * Returns HTTP 504 (Gateway Timeout) so the client receives a meaningful error
+ * instead of a bare connection reset.
+ */
+export class GatewayTimeoutError extends BaseError {
+  constructor(message: string, details?: any) {
+    super(message, 504, details);
+  }
+}

@@ -52,11 +52,30 @@ export function cleanMobileNumber(phone: string, countryCode: string): string {
 
 /**
  * Safe date parsing to ISO-8601 string.
- * Ensures new Date(created_at) is never an Invalid Date.
- * Handles DD/MM/YYYY and DD-MM-YYYY formats that Date.parse() can't handle natively.
- * If the input is truly invalid, returns the current ISO timestamp as a fallback.
- * 
- * @param dateStr Raw date string.
+ * Ensures `new Date(created_at)` is never an Invalid Date.
+ *
+ * ## Parsing order
+ * 1. Epoch millisecond/second timestamps (pure digit strings).
+ * 2. Slash/dash/dot-separated numeric dates (`DD/MM/YYYY`, `MM/DD/YYYY`, etc.) —
+ *    see the **Ambiguity note** below.
+ * 3. Anything else via `Date.parse()` — handles ISO-8601, RFC 2822, natural
+ *    language like "May 15, 2026", SQL timestamps like "2026-05-13 14:20:48", etc.
+ * 4. If all strategies fail, returns the current ISO timestamp as a safe fallback.
+ *
+ * ## Ambiguity note: DD/MM/YYYY vs MM/DD/YYYY
+ * When both the first and second numeric components are ≤ 12 (e.g. `05/06/2026`),
+ * there is no way to determine the format from the data alone. This implementation
+ * **assumes DD/MM/YYYY** (day first), which is the dominant convention in India,
+ * Europe, and most of Asia — matching the GrowEasy CRM's primary user base.
+ *
+ * ⚠️  If your CSV source uses the US MM/DD/YYYY convention, pre-process dates
+ *     to ISO-8601 (YYYY-MM-DD) before import to avoid silent mis-parsing.
+ *
+ * When the first component is > 12 (e.g. `13/05/2026`), it is unambiguously a
+ * day — DD/MM/YYYY is used. When the second component is > 12 (e.g. `05/13/2026`),
+ * it is unambiguously a day — MM/DD/YYYY is used and `Date.parse` handles it.
+ *
+ * @param dateStr Raw date string from the CSV.
  * @returns Valid ISO-8601 date string.
  */
 export function formatDate(dateStr: string): string {
@@ -73,23 +92,30 @@ export function formatDate(dateStr: string): string {
     }
   }
 
-  // 2. Try DD/MM/YYYY, DD-MM-YYYY, or DD.MM.YYYY (day > 12 confirms DD/MM order)
+  // 2. Try DD/MM/YYYY, DD-MM-YYYY, or DD.MM.YYYY patterns.
+  //    Captures optional trailing time component (e.g. " 14:20:48").
   const ddMmYyyyMatch = trimmed.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})(.*)$/);
   if (ddMmYyyyMatch) {
     const [, dayOrMonth, monthOrDay, year, timePart] = ddMmYyyyMatch;
     const a = parseInt(dayOrMonth, 10);
     const b = parseInt(monthOrDay, 10);
 
-    // If first number > 12, it must be a day (DD/MM/YYYY)
-    // If second number > 12, it must be a day (MM/DD/YYYY — standard US, Date.parse handles this)
-    // If both ≤ 12, assume DD/MM/YYYY (non-US convention, common in India/Europe)
-    if (a > 12 || (a <= 12 && b <= 12)) {
-      // Treat as DD/MM/YYYY → rewrite to YYYY-MM-DD for reliable parsing
+    if (a > 12) {
+      // Unambiguous: first component > 12 → must be day (DD/MM/YYYY)
       const isoStr = `${year}-${String(b).padStart(2, '0')}-${String(a).padStart(2, '0')}${timePart || ''}`;
       const parsed = Date.parse(isoStr);
-      if (!isNaN(parsed)) {
-        return new Date(parsed).toISOString();
-      }
+      if (!isNaN(parsed)) return new Date(parsed).toISOString();
+    } else if (b > 12) {
+      // Unambiguous: second component > 12 → must be day (MM/DD/YYYY)
+      // Rewrite to YYYY-MM-DD for reliable ISO parsing
+      const isoStr = `${year}-${String(a).padStart(2, '0')}-${String(b).padStart(2, '0')}${timePart || ''}`;
+      const parsed = Date.parse(isoStr);
+      if (!isNaN(parsed)) return new Date(parsed).toISOString();
+    } else {
+      // Ambiguous (both ≤ 12): assume DD/MM/YYYY — see JSDoc Ambiguity note above.
+      const isoStr = `${year}-${String(b).padStart(2, '0')}-${String(a).padStart(2, '0')}${timePart || ''}`;
+      const parsed = Date.parse(isoStr);
+      if (!isNaN(parsed)) return new Date(parsed).toISOString();
     }
   }
 
@@ -102,3 +128,4 @@ export function formatDate(dateStr: string): string {
   logger.warn(`Could not parse date "${dateStr}". Falling back to current time.`);
   return new Date().toISOString();
 }
+

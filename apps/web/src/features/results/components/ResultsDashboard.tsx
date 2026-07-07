@@ -78,6 +78,7 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
   const [sourceFilter, setSourceFilter] = React.useState('');
   const [copiedCellId, setCopiedCellId] = React.useState<string | null>(null);
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 20 });
   const [columnVisibility, setColumnVisibility] = React.useState<Record<string, boolean>>({
     created_at: true,
     name: true,
@@ -261,9 +262,11 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
       globalFilter,
       sorting,
       columnVisibility,
+      pagination,
     },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -509,14 +512,48 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
           </div>
 
           {/* Table Pagination Banner */}
-          <div className="px-6 py-4 border-t border-border/40 bg-surface flex items-center justify-between text-xs font-semibold text-on-surface/60">
-            <div className="flex items-center space-x-1">
-              <span>Page</span>
-              <span className="text-on-background font-bold">{table.getState().pagination.pageIndex + 1}</span>
-              <span>of</span>
-              <span className="text-on-background font-bold">{table.getPageCount() || 1}</span>
+          <div className="px-6 py-4 border-t border-border/40 bg-surface flex flex-wrap items-center justify-between gap-3 text-xs font-semibold text-on-surface/60">
+            {/* Left: row range + rows-per-page selector */}
+            <div className="flex items-center space-x-3">
+              <span className="text-on-surface/50">
+                Showing{' '}
+                <span className="text-on-background font-bold">
+                  {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
+                </span>
+                {' '}–{' '}
+                <span className="text-on-background font-bold">
+                  {Math.min(
+                    (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+                    table.getFilteredRowModel().rows.length
+                  )}
+                </span>
+                {' '}of{' '}
+                <span className="text-on-background font-bold">
+                  {table.getFilteredRowModel().rows.length}
+                </span>
+                {' '}records
+              </span>
+              <div className="flex items-center space-x-1.5">
+                <span className="text-on-surface/40">Rows per page:</span>
+                <select
+                  value={table.getState().pagination.pageSize}
+                  onChange={(e) => table.setPageSize(Number(e.target.value))}
+                  className="bg-background border border-border rounded-lg px-2 py-1 text-on-background font-semibold text-xs focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                >
+                  {[10, 20, 50, 100].map((size) => (
+                    <option key={size} value={size}>{size}</option>
+                  ))}
+                </select>
+              </div>
             </div>
+            {/* Right: page navigator */}
             <div className="flex items-center space-x-2">
+              <span className="text-on-surface/40">
+                Page{' '}
+                <span className="text-on-background font-bold">{table.getState().pagination.pageIndex + 1}</span>
+                {' '}of{' '}
+                <span className="text-on-background font-bold">{table.getPageCount() || 1}</span>
+              </span>
               <Button
                 variant="outlined"
                 size="sm"
