@@ -64,6 +64,23 @@ function getFallbackProvider(primary: LLMProvider): LLMProvider | null {
   return null;
 }
 
+// In-memory cache for LLM results to optimize processing speed and reduce API costs.
+const llmCache = new Map<string, RawExtractedLead>();
+
+function getRecordCacheKey(record: DeterministicLead): string {
+  return JSON.stringify({
+    name: record.name,
+    company: record.company,
+    city: record.city,
+    state: record.state,
+    country: record.country,
+    possession_time: record.possession_time,
+    description: record.description,
+    crm_note: record.crm_note,
+    unmapped_data: record.unmapped_data,
+  });
+}
+
 /**
  * Converts a DeterministicLead (post-headerMapper) directly to a RawExtractedLead
  * without invoking the LLM. Used when contacts are already reliably identified.
@@ -151,60 +168,77 @@ export async function runImportPipeline(
   const llmExtracted: { originalIndex: number; lead: RawExtractedLead }[] = [];
 
   if (llmRecords.length > 0) {
-    const batchSize = config.batchSize;
-    const llmBatchInput = llmRecords.map(r => r.record);
+    const cacheMissEntries: typeof llmRecords = [];
 
-    let llmResults: RawExtractedLead[] = [];
-    try {
-      llmResults = await processInBatches(
-        llmBatchInput,
-        batchSize,
-        async (batch, batchIndex, totalBatches) => {
-          const rawResponse = await withRetry(() =>
-            provider.extractLeads(batch, systemPrompt, extractionPrompt)
-          );
-          return validateAndRepair(rawResponse, provider, repairPrompt, systemPrompt);
-        }
-      );
-    } catch (err: any) {
-      // Try fallback provider before giving up
-      const fallback = getFallbackProvider(provider);
-      if (fallback) {
-        logger.warn(`[AIService] Primary provider (${provider.name}) failed. Trying fallback: ${fallback.name}`);
-        try {
-          llmResults = await processInBatches(
-            llmBatchInput,
-            batchSize,
-            async (batch) => {
-              const rawResponse = await withRetry(() =>
-                fallback.extractLeads(batch, systemPrompt, extractionPrompt)
-              );
-              return validateAndRepair(rawResponse, fallback, repairPrompt, systemPrompt);
-            }
-          );
-        } catch (fallbackErr: any) {
-          logger.error(`[AIService] Fallback provider (${fallback.name}) also failed:`, fallbackErr.message);
-          throw err; // Re-throw original error
-        }
+    // Check cache first
+    llmRecords.forEach((entry) => {
+      const key = getRecordCacheKey(entry.record);
+      if (llmCache.has(key)) {
+        logger.debug(`[AIService] Cache hit for row ${entry.originalIndex + 1}. Skipping LLM call.`);
+        llmExtracted.push({ originalIndex: entry.originalIndex, lead: llmCache.get(key)! });
       } else {
-        throw err;
-      }
-    }
-
-    // Align LLM output to original indices — guard against count mismatch
-    llmRecords.forEach((entry, batchIdx) => {
-      const extractedLead = llmResults[batchIdx];
-      if (extractedLead) {
-        llmExtracted.push({ originalIndex: entry.originalIndex, lead: extractedLead });
-      } else {
-        logger.warn(`[AIService] LLM returned no result for batch index ${batchIdx} (original row ${entry.originalIndex + 1}). Skipping.`);
-        skippedRecords.push({
-          rowIndex: entry.originalIndex + 1,
-          reason: `Skipped row ${entry.originalIndex + 1}: contains neither a valid email nor mobile number.`,
-          rawRecord: rawRecords[entry.originalIndex] || {},
-        });
+        cacheMissEntries.push(entry);
       }
     });
+
+    if (cacheMissEntries.length > 0) {
+      const batchSize = config.batchSize;
+      const llmBatchInput = cacheMissEntries.map(r => r.record);
+
+      let llmResults: RawExtractedLead[] = [];
+      try {
+        llmResults = await processInBatches(
+          llmBatchInput,
+          batchSize,
+          async (batch, batchIndex, totalBatches) => {
+            const rawResponse = await withRetry(() =>
+              provider.extractLeads(batch, systemPrompt, extractionPrompt)
+            );
+            return validateAndRepair(rawResponse, provider, repairPrompt, systemPrompt);
+          }
+        );
+      } catch (err: any) {
+        // Try fallback provider before giving up
+        const fallback = getFallbackProvider(provider);
+        if (fallback) {
+          logger.warn(`[AIService] Primary provider (${provider.name}) failed. Trying fallback: ${fallback.name}`);
+          try {
+            llmResults = await processInBatches(
+              llmBatchInput,
+              batchSize,
+              async (batch) => {
+                const rawResponse = await withRetry(() =>
+                  fallback.extractLeads(batch, systemPrompt, extractionPrompt)
+                );
+                return validateAndRepair(rawResponse, fallback, repairPrompt, systemPrompt);
+              }
+            );
+          } catch (fallbackErr: any) {
+            logger.error(`[AIService] Fallback provider (${fallback.name}) also failed:`, fallbackErr.message);
+            throw err; // Re-throw original error
+          }
+        } else {
+          throw err;
+        }
+      }
+
+      // Populate cache and align LLM output to original indices
+      cacheMissEntries.forEach((entry, batchIdx) => {
+        const extractedLead = llmResults[batchIdx];
+        if (extractedLead) {
+          const key = getRecordCacheKey(entry.record);
+          llmCache.set(key, extractedLead);
+          llmExtracted.push({ originalIndex: entry.originalIndex, lead: extractedLead });
+        } else {
+          logger.warn(`[AIService] LLM returned no result for batch index ${batchIdx} (original row ${entry.originalIndex + 1}). Skipping.`);
+          skippedRecords.push({
+            rowIndex: entry.originalIndex + 1,
+            reason: `Skipped row ${entry.originalIndex + 1}: contains neither a valid email nor mobile number.`,
+            rawRecord: rawRecords[entry.originalIndex] || {},
+          });
+        }
+      });
+    }
   }
 
   // ─── Merge and sort by original index ──────────────────────────────────────

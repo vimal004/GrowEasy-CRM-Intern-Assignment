@@ -63,6 +63,31 @@ interface PreviewTableProps {
 }
 
 export function PreviewTable({ metadata, previewRows, onConfirm, onCancel }: PreviewTableProps) {
+  // Estimate mapping duration dynamically based on the deterministic ratio of the preview rows.
+  // Rows that are pre-mapped with contacts bypass the LLM entirely (0s).
+  const estimatedTime = React.useMemo(() => {
+    const previewDeterministicCount = previewRows.filter((row) => {
+      return Object.entries(row).some(([key, val]) => {
+        const normKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const hasEmailKey = normKey.includes('email') || normKey.includes('mail');
+        const hasPhoneKey =
+          normKey.includes('phone') ||
+          normKey.includes('mobile') ||
+          normKey.includes('tel') ||
+          normKey.includes('whatsapp') ||
+          normKey.includes('contact');
+        return (hasEmailKey || hasPhoneKey) && String(val).trim() !== '';
+      });
+    }).length;
+
+    const previewDeterministicRatio = previewRows.length > 0 ? previewDeterministicCount / previewRows.length : 0;
+    const estimatedDeterministicCount = Math.round(metadata.rowCount * previewDeterministicRatio);
+    const estimatedLlmCount = Math.max(0, metadata.rowCount - estimatedDeterministicCount);
+    
+    // Batch processing size is 10, taking about 1.2s per batch on average.
+    return Math.max(1.0, Math.ceil(estimatedLlmCount / 10) * 1.2).toFixed(1);
+  }, [metadata.rowCount, previewRows]);
+
   // Format bytes to human readable format
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -224,7 +249,7 @@ export function PreviewTable({ metadata, previewRows, onConfirm, onCancel }: Pre
 
           <div className="flex justify-between items-center text-xs text-on-surface/50 border-t border-border/40 pt-4">
             <span>Estimated AI mapping time:</span>
-            <span className="font-bold text-on-background">~ {Math.max(1, Math.ceil(metadata.rowCount / 10) * 1.5).toFixed(1)} seconds</span>
+            <span className="font-bold text-on-background">~ {estimatedTime} seconds</span>
           </div>
         </CardContent>
         <CardFooter className="flex items-center justify-between border-t border-border/10 mt-2 pt-4">

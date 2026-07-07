@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
-import { UploadCloud, FileSpreadsheet, AlertCircle, CheckCircle, Sparkles, Brain, Filter, ShieldCheck } from 'lucide-react';
+import { UploadCloud, FileSpreadsheet, AlertCircle, CheckCircle, Sparkles, Brain, Filter, ShieldCheck, Zap } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent } from '../../../components/ui/Card';
 
@@ -179,11 +179,11 @@ export function UploadDropzone({ onFileAccepted }: UploadDropzoneProps) {
             ),
           },
           {
-            icon: Sparkles,
-            title: 'Data Scrubbing & Notes',
+            icon: Zap,
+            title: 'Record-Level Cache',
             desc: (
               <>
-                Normalizes contact records while compiling all secondary numbers, emails, and unmapped metadata into consolidated <strong className="text-on-background font-bold">crm_note</strong> fields.
+                Caches LLM results at the record-level to avoid redundant API queries, dramatically speeding up re-imports and minimizing API cost.
               </>
             ),
           },

@@ -119,6 +119,7 @@ groweasy-crm-csv-importer/
 ### Backend
 - **Pluggable AI Providers** — Swap between OpenAI, Gemini, Groq, or Mock with a single env var
 - **Batch Processing** — Records are split into configurable batches for efficient AI processing
+- **In-Memory Caching** — Caches LLM processing results at the record-level to avoid redundant API queries, dramatically speeding up re-imports and minimizing token/API usage
 - **Exponential Backoff Retry** — Automatic retries on 429 (rate limit), 5xx errors, and timeouts
 - **AI Self-Repair** — If the LLM returns malformed JSON, the system asks it to fix itself
 - **Strict CRM Validation** — Zod schemas enforce field types, enum values, and contact requirements
