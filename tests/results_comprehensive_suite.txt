@@ -6,7 +6,7 @@ Dataset: tests/comprehensive_edge_cases.csv
 
 [1/3] Checking API Deployed Health...
 [0;32mSUCCESS: API is online (HTTP 200)[0m
-{"status":"UP","timestamp":"2026-07-07T11:12:03.652Z"}
+{"status":"UP","timestamp":"2026-07-07T13:15:35.876Z"}
 
 [2/3] Testing Upload Preview Endpoint...
 [0;32mSUCCESS: Preview generated successfully (HTTP 200)[0m
@@ -18,18 +18,13 @@ Headers: ['created_at', 'name', 'email', 'country_code', 'mobile_without_country
 
 [3/3] Testing AI Import Pipeline Endpoint (Messy Formats & Edge Cases)...
 [0;32mSUCCESS: Import pipeline completed successfully (HTTP 200)[0m
-Traceback (most recent call last):
-  File "<string>", line 39, in <module>
-    print(f'18. Source Match eden park -> Source: {d["importedRecords"][18]["data_source"]}')
-                                                   ~~~~~~~~~~~~~~~~~~~~^^^^
-IndexError: list index out of range
 ==================================================
 📊 METRICS SUMMARY
 ==================================================
-Imported count: 18
+Imported count: 20
 Skipped count: 1
-Success rate: 86%
-Processing time: 95312ms
+Success rate: 95%
+Processing time: 771ms
 
 ==================================================
 🕵️‍♀️ VERIFYING TARGET CONSTRAINTS & EDGE CASES
@@ -38,7 +33,7 @@ Processing time: 95312ms
 2. ISO with Slash Date -> 2026-05-13T14:20:48.000Z
 3. Epoch Date -> 2026-05-14T08:30:48.000Z
 4. DD/MM/YYYY Date -> 2026-05-13T00:00:00.000Z
-5. Invalid Date Fallback -> 2026-07-07T11:13:39.758Z
+5. Invalid Date Fallback -> 2026-07-07T13:15:37.938Z
 
 6. Formula Escaped Name (=) -> Formula Injection =
 7. Formula Escaped Name (+) -> Formula Injection +
@@ -47,13 +42,15 @@ Processing time: 95312ms
 
 10. Uncorrupted Country Code -> +91
 
-11. Line Breaks Escaping -> Note: 'Original Note: This note contains\r\nnewlines that must be escaped. | Metadata: [mobile_without_country_code: 9876543220]'
-12. Skip Criteria Row 12 (Skipped Lead) -> Index: 13, Reason: Skipped row 13: contains neither a valid email nor mobile number.
+11. Line Breaks Escaping -> Note: 'Original Note: This note contains\r\nnewlines that must be escaped.'
+12. Skip Criteria Row 12 (Skipped Lead) -> Index: 12, Reason: Skipped row 12: contains neither a valid email nor mobile number.
 
-13. Multi Contact De-duplication -> Note: Original Note: CRM status is 'did not connect | Metadata: [mobile_without_country_code: 9876543223]
+13. Multi Contact De-duplication -> Note: Extra Emails: second@example.com | Extra Phones: 9988776655 | Original Note: First contact mapped, remaining contacts appended to crm_note
 
-14. Status Fuzzy Match did not connect -> Status: BAD_LEAD
-15. Status Fuzzy Match junk -> Status: SALE_DONE
-16. Status Fuzzy Match sale -> Status: GOOD_LEAD_FOLLOW_UP
+14. Status Fuzzy Match did not connect -> Status: DID_NOT_CONNECT
+15. Status Fuzzy Match junk -> Status: BAD_LEAD
+16. Status Fuzzy Match sale -> Status: SALE_DONE
 
-17. Source Match sarjapur plots -> Source: eden_park
+17. Source Match sarjapur plots -> Source: sarjapur_plots
+18. Source Match eden park -> Source: eden_park
+19. Source Match invalid -> Source: 
