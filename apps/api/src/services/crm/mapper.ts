@@ -58,17 +58,48 @@ export function mapToCrmLead(
   // 2. Resolve and restrict Enums
   let crmStatus: CrmStatus = 'GOOD_LEAD_FOLLOW_UP';
   if (raw.crm_status) {
+    // Normalize: uppercase, collapse spaces/underscores/hyphens to underscore
     const rawStatus = raw.crm_status.trim().toUpperCase().replace(/[\s_-]+/g, '_');
     if (CRM_STATUSES.includes(rawStatus as CrmStatus)) {
       crmStatus = rawStatus as CrmStatus;
     } else {
-      // Fallback matching logic
-      if (rawStatus.includes('SALE') || rawStatus.includes('DONE') || rawStatus.includes('CLOSE')) {
+      // Collapse further to detect word presence reliably
+      const statusWords = raw.crm_status.trim().toLowerCase().replace(/[\s_-]+/g, ' ');
+      if (
+        statusWords.includes('sale') ||
+        statusWords.includes('done') ||
+        statusWords.includes('close') ||
+        statusWords.includes('sold') ||
+        statusWords.includes('won')
+      ) {
         crmStatus = 'SALE_DONE';
-      } else if (rawStatus.includes('BAD') || rawStatus.includes('JUNK') || rawStatus.includes('SPAM')) {
-        crmStatus = 'BAD_LEAD';
-      } else if (rawStatus.includes('NOT') || rawStatus.includes('BUSY') || rawStatus.includes('NO_ANSWER')) {
+      } else if (
+        statusWords.includes('did not') ||
+        statusWords.includes('not connect') ||
+        statusWords.includes('no answer') ||
+        statusWords.includes('busy') ||
+        statusWords.includes('unreachable') ||
+        statusWords.includes('no response') ||
+        (statusWords.includes('not') && statusWords.includes('connect'))
+      ) {
         crmStatus = 'DID_NOT_CONNECT';
+      } else if (
+        statusWords.includes('bad') ||
+        statusWords.includes('junk') ||
+        statusWords.includes('spam') ||
+        statusWords.includes('invalid') ||
+        statusWords.includes('wrong') ||
+        statusWords.includes('fake')
+      ) {
+        crmStatus = 'BAD_LEAD';
+      } else if (
+        statusWords.includes('good') ||
+        statusWords.includes('interest') ||
+        statusWords.includes('follow') ||
+        statusWords.includes('prospect') ||
+        statusWords.includes('warm')
+      ) {
+        crmStatus = 'GOOD_LEAD_FOLLOW_UP';
       } else {
         crmStatus = 'GOOD_LEAD_FOLLOW_UP';
       }
@@ -77,11 +108,22 @@ export function mapToCrmLead(
 
   let dataSource: DataSource | '' = '';
   if (raw.data_source) {
-    const rawSource = raw.data_source.trim().toLowerCase().replace(/[\s_-]+/g, '_');
+    // Normalize: lowercase, collapse all non-alphanumeric (spaces, hyphens, underscores) to underscore
+    const rawSource = raw.data_source.trim().toLowerCase().replace(/[\s_\-\/]+/g, '_').replace(/[^a-z0-9_]/g, '');
     if (DATA_SOURCES.includes(rawSource as DataSource)) {
       dataSource = rawSource as DataSource;
+    } else {
+      // Fuzzy: try stripping down further for partial matches (e.g. "sarjapur plots" → "sarjapur_plots")
+      const candidate = DATA_SOURCES.find((src) => {
+        const normSrc = src.replace(/_/g, '');
+        const normRaw = rawSource.replace(/_/g, '');
+        return normSrc === normRaw || normSrc.includes(normRaw) || normRaw.includes(normSrc);
+      });
+      if (candidate) {
+        dataSource = candidate;
+      }
+      // Otherwise returns empty string as per spec
     }
-    // Otherwise returns empty string as per Gemini review guidelines
   }
 
   // 3. Compile crm_note (collect extras + unmapped fields + original note)

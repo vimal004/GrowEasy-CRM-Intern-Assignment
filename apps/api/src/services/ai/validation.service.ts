@@ -24,8 +24,7 @@ export const RawExtractedLeadSchema = z.object({
   unmapped_data: z.record(z.any()).catch({}).default({}),
 }).passthrough();
 
-// Use .catch([]) so any completely malformed LLM output returns [] instead of crashing
-export const RawExtractedLeadsSchema = z.array(RawExtractedLeadSchema).catch([]);
+export const RawExtractedLeadsSchema = z.array(RawExtractedLeadSchema);
 
 /**
  * Validates a raw JSON string output from the LLM, attempts to parse it,

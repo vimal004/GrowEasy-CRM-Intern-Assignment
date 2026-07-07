@@ -16,7 +16,7 @@ export interface LLMProvider {
    * @returns A promise resolving to the raw string response from the model.
    */
   extractLeads(
-    records: Record<string, string>[],
+    records: any[],
     systemPrompt: string,
     extractionPromptTemplate: string
   ): Promise<string>;

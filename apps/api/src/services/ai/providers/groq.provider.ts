@@ -15,7 +15,7 @@ export class GroqProvider implements LLMProvider {
   }
 
   public async extractLeads(
-    records: Record<string, string>[],
+    records: any[],
     systemPrompt: string,
     extractionPromptTemplate: string
   ): Promise<string> {

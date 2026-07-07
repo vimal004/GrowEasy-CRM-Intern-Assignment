@@ -64,8 +64,17 @@ export function formatDate(dateStr: string): string {
   
   const trimmed = dateStr.trim();
 
-  // 1. Try DD/MM/YYYY or DD-MM-YYYY (day > 12 confirms DD/MM order)
-  const ddMmYyyyMatch = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(.*)$/);
+  // 1. Check for epoch millisecond timestamp (only digits, 10 or 13 digits)
+  if (/^\d+$/.test(trimmed)) {
+    const epoch = parseInt(trimmed, 10);
+    const dateObj = new Date(epoch);
+    if (!isNaN(dateObj.getTime())) {
+      return dateObj.toISOString();
+    }
+  }
+
+  // 2. Try DD/MM/YYYY, DD-MM-YYYY, or DD.MM.YYYY (day > 12 confirms DD/MM order)
+  const ddMmYyyyMatch = trimmed.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})(.*)$/);
   if (ddMmYyyyMatch) {
     const [, dayOrMonth, monthOrDay, year, timePart] = ddMmYyyyMatch;
     const a = parseInt(dayOrMonth, 10);
@@ -84,7 +93,7 @@ export function formatDate(dateStr: string): string {
     }
   }
 
-  // 2. Standard Date.parse (handles ISO-8601, "May 15, 2026", "2026-05-13 14:20:48", etc.)
+  // 3. Standard Date.parse (handles ISO-8601, "May 15, 2026", "2026-05-13 14:20:48", etc.)
   const parsed = Date.parse(trimmed);
   if (!isNaN(parsed)) {
     return new Date(parsed).toISOString();

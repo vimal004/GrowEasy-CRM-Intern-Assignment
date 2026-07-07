@@ -10,6 +10,7 @@ import { processInBatches } from './batch.service';
 import { withRetry } from './retry.service';
 import { validateAndRepair } from './validation.service';
 import { mapToCrmLead } from '../crm/mapper';
+import { mapRowHeaders } from '../csv/headerMapper';
 import { config } from '../../config/env';
 import { logger } from '../../config/logger';
 import { AIError } from '../../utils/errors';
@@ -85,10 +86,12 @@ export async function runImportPipeline(
   const extractionPrompt = loadPromptFile('extraction.md');
   const repairPrompt = loadPromptFile('repair.md');
 
+  const preMappedRecords = rawRecords.map(mapRowHeaders);
+
   // Process in configurable batches
   const batchSize = config.batchSize;
   const rawExtractedLeads = await processInBatches(
-    rawRecords,
+    preMappedRecords,
     batchSize,
     async (batch, batchIndex, totalBatches) => {
       // Execute the LLM call with exponential backoff retry
