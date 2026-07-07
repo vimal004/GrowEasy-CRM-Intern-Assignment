@@ -1,0 +1,210 @@
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 1: SERVER HEALTH & CONNECTIVITY[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;32m✅ PASS[0m: Root GET / returns 200
+[0;34mℹ️  INFO[0m: Body: Welcome to the GrowEasy CRM AI CSV Importer API!
+[0;32m✅ PASS[0m: GET /api/health returns 200
+[0;34mℹ️  INFO[0m: Body: {"status":"UP","timestamp":"2026-07-07T11:08:06.540Z"}
+[0;32m✅ PASS[0m: Health: response contains 'status' field
+[0;32m✅ PASS[0m: GET /api/version returns 200
+[0;34mℹ️  INFO[0m: Body: {"name":"groweasy-crm-api","version":"1.0.0"}
+[0;32m✅ PASS[0m: HTTPS/TLS active: * SSL connection using TLSv1.3 / AEAD-CHACHA20-POLY1305-SHA256 / [blank] / UNDEF
+[0;32m✅ PASS[0m: Security: Content-Security-Policy header present
+[0;34mℹ️  INFO[0m: CSP: content-security-policy: default-src 'self'; frame-ancestors 'none'; object-src 'none';
+[0;32m✅ PASS[0m: Security: X-Content-Type-Options: nosniff present
+[0;32m✅ PASS[0m: CORS: preflight allows localhost:3000
+[0;34mℹ️  INFO[0m: CORS headers: access-control-allow-credentials: true|access-control-allow-headers: Content-Type,Authorization|access-control-allow-methods: GET,POST|access-control-allow-origin: http://localhost:3000|
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 2: POST /api/upload/preview (NO AI PROCESSING)[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;32m✅ PASS[0m: Preview: groweasy_sample.csv returns 200
+[0;32m✅ PASS[0m: Preview: response contains 'previewRows' field
+[0;32m✅ PASS[0m: Preview: response contains 'metadata' field
+[0;34mℹ️  INFO[0m: Preview row count: 4
+[0;32m✅ PASS[0m: Preview: correct 4 rows returned for 4-data-row CSV
+[0;34mℹ️  INFO[0m: Preview data type: RAW_ROWS
+[0;34mℹ️  INFO[0m: Preview response time: 0s
+[0;32m✅ PASS[0m: Preview: fast response (0s) - no AI processing
+[0;32m✅ PASS[0m: Preview: POST /api/upload (alias) also returns 200
+[0;32m✅ PASS[0m: Preview: no file returns 400 (correct error)
+[0;34mℹ️  INFO[0m: Preview with wrong field name 'csv': 500
+[1;33m⚠️  WARN[0m: Preview: accepts unknown field 'csv' (may be flexible)
+[0;34mℹ️  INFO[0m: Preview with empty CSV: 200
+[1;33m⚠️  WARN[0m: Preview: empty CSV returned 200 (should be 400/422)
+[0;32m✅ PASS[0m: Preview: edge_cases_test.csv returns 200
+[0;34mℹ️  INFO[0m: Edge CSV preview rows: 5 (expected 5 data rows)
+[0;32m✅ PASS[0m: Preview: edge CSV returns 5 rows (including no-contact row)
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 3: POST /api/import (AI EXTRACTION)[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Running AI import on groweasy_sample.csv...
+[0;34mℹ️  INFO[0m: Status: 200
+[0;32m✅ PASS[0m: Import: groweasy_sample.csv returns 200
+[0;32m✅ PASS[0m: Import: response is valid JSON
+[0;34mℹ️  INFO[0m: TOP_KEYS: ['importedRecords', 'skippedRecords', 'metrics']
+[0;32m✅ PASS[0m: Import: HAS_IMPORTED_RECORDS: count = 4
+[0;32m✅ PASS[0m: Import: HAS_SKIPPED_RECORDS: count = 0
+[0;32m✅ PASS[0m: Import: metrics object present - HAS_METRICS: {'importedCount': 4, 'skippedCount': 0, 'successRate': 100, 'processingTimeMs': 939}
+[0;34mℹ️  INFO[0m: CRM_FIELDS_PRESENT: ['created_at', 'name', 'email', 'country_code', 'mobile_without_country_code', 'company', 'city', 'state', 'country', 'lead_owner', 'crm_status', 'crm_note', 'data_source', 'possession_time', 'description']
+[0;32m✅ PASS[0m: Import: all 15 CRM fields present in response
+[0;34mℹ️  INFO[0m: Sample record: SAMPLE: {"created_at": "2026-05-13T14:20:48.000Z", "name": "John Doe", "email": "john.doe@example.com", "country_code": "+91", "mobile_without_country_code": "9876543210", "company": "GrowEasy", "city": "Mumbai", "state": "Maharashtra", "country": "India", "lead_owner": "test@gmail.com", "crm_status": "GOOD_LEAD_FOLLOW_UP", "crm_note": "Original Note: Client is asking to reschedule demo", "data_source": "", "possession_time": "", "description": ""}
+[0;32m✅ PASS[0m: Import: all crm_status values are valid enum values
+[0;32m✅ PASS[0m: Import: all data_source values are valid enum values
+[0;32m✅ PASS[0m: Import: created_at is ISO format (JS-parseable) - DATE_OK: 2026-05-13T14:20:48.000Z
+[0;32m✅ PASS[0m: Import: created_at is ISO format (JS-parseable) - DATE_OK: 2026-05-13T14:25:30.000Z
+[0;32m✅ PASS[0m: Import: created_at is ISO format (JS-parseable) - DATE_OK: 2026-05-13T14:30:15.000Z
+[0;32m✅ PASS[0m: Import: created_at is ISO format (JS-parseable) - DATE_OK: 2026-05-13T14:35:22.000Z
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 4: SKIP RECORDS (NO EMAIL + NO MOBILE)[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Testing import with 1 no-contact record (should be skipped)...
+[0;34mℹ️  INFO[0m: Status: 200
+[0;32m✅ PASS[0m: Skip test: returns 200
+[0;34mℹ️  INFO[0m: PARSED_COUNT: 2
+[0;34mℹ️  INFO[0m: SKIPPED_COUNT: 1
+[0;32m✅ PASS[0m: Skip test: correctly skipped 1 record with no email/mobile
+[0;34mℹ️  INFO[0m: Testing import with all-invalid records...
+[0;32m✅ PASS[0m: All-invalid: returns 200
+[0;32m✅ PASS[0m: All-invalid: 0 records parsed (all skipped correctly)
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 5: MULTIPLE EMAILS/PHONES → crm_note[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Testing multi-contact record...
+[0;34mℹ️  INFO[0m: Status: 200
+[0;34mℹ️  INFO[0m: Body: {"importedRecords":[],"skippedRecords":[],"metrics":{"importedCount":0,"skippedCount":0,"successRate":0,"processingTimeMs":4492}}
+[0;32m✅ PASS[0m: Multi-contact: returns 200
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 6: MESSY COLUMN HEADERS (AI FIELD MAPPING)[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Testing import with messy column headers...
+[0;34mℹ️  INFO[0m: Status: 200
+[0;34mℹ️  INFO[0m: Response: {"importedRecords":[{"created_at":"2026-05-13T00:00:00.000Z","name":"John Smith","email":"john.smith@example.com","country_code":"+91","mobile_without_country_code":"9988776655","company":"Tech Corp","city":"Mumbai","state":"MH","country":"India","lead_owner":"owner@groweasy.ai","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"","data_source":"leads_on_demand","possession_time":"6 months","description":"Interested in 2BHK."},{"created_at":"2026-05-14T00:00:00.000Z","name":"Jane Doe","email":"jane.doe@example.com","country_code":"+91","mobile_without_country_code":"9988776600","company":"Acme Co","city":"Delhi","state":"DL","country":"India","lead_owner":"owner2@groweasy.ai","crm_status":"DID_NOT_CONNECT","crm_note":"","data_source":"meridian_tower","possession_time":"1 year","description":"Wants bigger unit."}],"skippedRecords":[],"metrics":{"importedCount":2,"skippedCount":0,"successRate":100,"processingTimeMs":18689}}
+[0;32m✅ PASS[0m: Messy headers: returns 200
+[0;34mℹ️  INFO[0m: name=John Smith|email=john.smith@example.com|mobile=9988776655|status=GOOD_LEAD_FOLLOW_UP|city=Mumbai|source=leads_on_demand
+[0;32m✅ PASS[0m: Messy headers: NAME_MAPPED_OK: Client_Name->name
+[0;32m✅ PASS[0m: Messy headers: EMAIL_MAPPED_OK: MailBox->email
+[0;32m✅ PASS[0m: Messy headers: MOBILE_MAPPED_OK: Ph_No->mobile
+[0;32m✅ PASS[0m: Messy headers: STATUS_VALID
+[0;32m✅ PASS[0m: Messy headers: CITY_MAPPED_OK: CityName->city
+[0;32m✅ PASS[0m: Messy headers: SOURCE_VALID
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 7: DATE FORMAT VARIATIONS[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Testing various date formats...
+[0;34mℹ️  INFO[0m: Status: 502
+[0;31m❌ FAIL[0m: Date formats: returned 502
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 8: CRM STATUS ENUM ENFORCEMENT[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Testing crm_status enum enforcement...
+[0;34mℹ️  INFO[0m: Status: 200 | Body: {"importedRecords":[{"created_at":"2026-07-07T11:09:07.047Z","name":"Good Lead","email":"good@example.com","country_code":"+91","mobile_without_country_code":"9876543210","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"","data_source":"","possession_time":"","description":""},{"created_at":"2026-07-07T11:09:07.047Z","name":"Bad Status","email":"bad@example.com","country_code":"+91","mobile_without_country_code":"9876543211","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"BAD_LEAD","crm_note":"","data_source":"","possession_time":"","description":""},{"created_at":"2026-07-07T11:09:07.047Z","name":"Valid Status","email":"valid@example.com","country_code":"+91","mobile_without_country_code":"9876543212","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"","data_source":"","possession_time":"","description":""},{"created_at":"2026-07-07T11:09:07.047Z","name":"Follow Up","email":"followup@example.com","country_code":"+91","mobile_without_country_code":"9876543213","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"","data_source":"","possession_time":"","description":""}],"skippedRecords":[],"metrics":{"importedCount":4,"skippedCount":0,"successRate":100,"processingTimeMs":23856}}
+[0;32m✅ PASS[0m: CRM Status enum: returns 200
+[0;34mℹ️  INFO[0m: Status: VALID_STATUS: Good Lead -> GOOD_LEAD_FOLLOW_UP
+[0;34mℹ️  INFO[0m: Status: VALID_STATUS: Bad Status -> BAD_LEAD
+[0;34mℹ️  INFO[0m: Status: VALID_STATUS: Valid Status -> GOOD_LEAD_FOLLOW_UP
+[0;34mℹ️  INFO[0m: Status: VALID_STATUS: Follow Up -> GOOD_LEAD_FOLLOW_UP
+[0;32m✅ PASS[0m: CRM Status: all values mapped to valid enum
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 9: DATA SOURCE ENUM ENFORCEMENT[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Testing data_source enum enforcement...
+[0;34mℹ️  INFO[0m: Status: 200 | Body: {"importedRecords":[{"created_at":"2026-07-07T11:09:23.601Z","name":"Valid Source","email":"valid@example.com","country_code":"+91","mobile_without_country_code":"9876543210","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"","data_source":"leads_on_demand","possession_time":"","description":""},{"created_at":"2026-07-07T11:09:23.601Z","name":"Invalid Source","email":"invalid@example.com","country_code":"+91","mobile_without_country_code":"9876543211","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"","data_source":"","possession_time":"","description":""},{"created_at":"2026-07-07T11:09:23.601Z","name":"Unknown Source","email":"unknown@example.com","country_code":"+91","mobile_without_country_code":"9876543212","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"","data_source":"","possession_time":"","description":""},{"created_at":"2026-07-07T11:09:23.601Z","name":"Eden Park Lead","email":"eden@example.com","country_code":"+91","mobile_without_country_code":"9876543213","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"","data_source":"eden_park","possession_time":"","description":""}],"skippedRecords":[],"metrics":{"importedCount":4,"skippedCount":0,"successRate":100,"processingTimeMs":15756}}
+[0;32m✅ PASS[0m: Data source enum: returns 200
+[0;34mℹ️  INFO[0m: Source: VALID_SOURCE: Valid Source -> "leads_on_demand"
+[0;34mℹ️  INFO[0m: Source: VALID_SOURCE: Invalid Source -> ""
+[0;34mℹ️  INFO[0m: Source: VALID_SOURCE: Unknown Source -> ""
+[0;34mℹ️  INFO[0m: Source: VALID_SOURCE: Eden Park Lead -> "eden_park"
+[0;32m✅ PASS[0m: Data source: all invalid sources correctly blanked to empty string
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 10: REAL-WORLD CSV FORMATS (Facebook/Google Ads)[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Testing Facebook Lead Export format...
+[0;34mℹ️  INFO[0m: Status: 200 | Body: {"importedRecords":[{"created_at":"2026-05-13T10:20:00.000Z","name":"Priya Sharma","email":"priya.sharma@gmail.com","country_code":"+91","mobile_without_country_code":"9988112233","company":"","city":"Mumbai","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"Metadata: [id: 123456, created_time: 2026/05/13 10:20:00, ad_name: Summer Campaign, zip_code: 400001]","data_source":"","possession_time":"","description":""},{"created_at":"2026-05-14T11:30:00.000Z","name":"Ravi Kumar","email":"ravi.kumar@hotmail.com","country_code":"+91","mobile_without_country_code":"9977223344","company":"","city":"Delhi","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"Metadata: [id: 789012, created_time: 2026/05/14 11:30:00, ad_name: Summer Campaign, zip_code: 110001]","data_source":"","possession_time":"","description":""}],"skippedRecords":[{"rowIndex":3,"reason":"Skipped row 3: contains neither a valid email nor mobile number.","rawRecord":{"id":"345678","created_time":"2026/05/15 12:00:00","ad_name":"Summer Campaign","full_name":"","email":"","phone_number":"","zip_code":"110002","city":"Delhi"}}],"metrics":{"importedCount":2,"skippedCount":1,"successRate":67,"processingTimeMs":22907}}
+[0;32m✅ PASS[0m: Facebook format: returns 200
+[0;34mℹ️  INFO[0m: Facebook CSV result: parsed=2,skipped=1 (expected parsed=2, skipped=1)
+[0;32m✅ PASS[0m: Facebook format: correctly parsed 2 records, skipped 1 (no email/phone)
+[0;34mℹ️  INFO[0m: Testing Google Ads Export format...
+[0;32m✅ PASS[0m: Google Ads format: returns 200
+[0;34mℹ️  INFO[0m: Response: {"importedRecords":[{"created_at":"2026-07-07T11:10:12.752Z","name":"Anita Patel","email":"anita.patel@example.com","country_code":"+91","mobile_without_country_code":"9876123456","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"Metadata: [Campaign: Property Campaign, Ad Group: 2BHK, Final URL: https://groweasy.ai, Clicks: 45, Impressions: 1200, Lead Form: Property Enquiry, Contact Phone: +91 9876123456]","data_source":"","possession_time":"","description":""},{"created_at":"2026-07-07T11:10:12.752Z","name":"Suresh Nair","email":"suresh.nair@example.com","country_code":"+91","mobile_without_country_code":"9876654321","company":"","city":"","state":"","country":"","lead_owner":"","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"Metadata: [Campaign: Property Campaign, Ad Group: 3BHK, Final URL: https://groweasy.ai, Clicks: 30, Impressions: 800, Lead Form: Property Enquiry, Contact Phone: +91 9876654321]","data_source":"","possession_time":"","description":""}],"skippedRecords":[],"metrics":{"importedCount":2,"skippedCount":0,"successRate":100,"processingTimeMs":24732}}
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 11: SECURITY TESTS[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;32m✅ PASS[0m: CSV injection: server handles gracefully (200)
+[0;32m✅ PASS[0m: CSV injection: formula injection not found verbatim in output
+[0;32m✅ PASS[0m: CORS: does NOT allow untrusted origin evil.com
+[0;32m✅ PASS[0m: Security: X-Frame-Options present: x-frame-options: DENY
+[0;34mℹ️  INFO[0m: 5000-row preview status: 200
+[1;33m⚠️  WARN[0m: File size: 5000-row file accepted (no size limit enforced)
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 12: edge_cases_test.csv (FULL ASSIGNMENT SAMPLE)[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Testing full edge_cases_test.csv import...
+[0;34mℹ️  INFO[0m: Status: 200
+[0;34mℹ️  INFO[0m: Full response: {"importedRecords":[{"created_at":"2026-05-12T10:00:00.000Z","name":"Clean Lead","email":"clean@example.com","country_code":"+91","mobile_without_country_code":"9988776655","company":"Acme Corp","city":"Mumbai","state":"MH","country":"India","lead_owner":"owner@groweasy.ai","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"Metadata: [Date_Registered: 13/05/2026]","data_source":"leads_on_demand","possession_time":"Ready to move","description":"A standard correct lead"},{"created_at":"2026-05-15T10:00:00.000Z","name":"Multiple Contacts Lead","email":"primary@example.com","country_code":"+91","mobile_without_country_code":"9876543210","company":"Multicorp","city":"Pune","state":"MH","country":"India","lead_owner":"owner@groweasy.ai","crm_status":"SALE_DONE","crm_note":"Extra Emails: secondary@example.com | Extra Phones: +91 022-1234567 | Metadata: [Date_Registered: May 15, 2026]","data_source":"sarjapur_plots","possession_time":"","description":"Has multiple emails and phones"},{"created_at":"2026-05-16T10:00:00.000Z","name":"'=CMD(CSV_Injection)","email":"injection@example.com","country_code":"+91","mobile_without_country_code":"9123456789","company":"Formula Inc","city":"Chennai","state":"TN","country":"India","lead_owner":"owner@groweasy.ai","crm_status":"GOOD_LEAD_FOLLOW_UP","crm_note":"Metadata: [Date_Registered: 16/05/2026]","data_source":"varah_swamy","possession_time":"","description":"Name starts with = and phone starts with +"},{"created_at":"2026-05-17T10:00:00.000Z","name":"Messy Lead","email":"messy@example.com","country_code":"+91","mobile_without_country_code":"9999911111","company":"Messy Corp","city":"Bangalore","state":"KA","country":"India","lead_owner":"owner@groweasy.ai","crm_status":"BAD_LEAD","crm_note":"Metadata: [Date_Registered: 17/05/2026]","data_source":"","possession_time":"","description":"Status is messy, source is invalid"}],"skippedRecords":[{"rowIndex":2,"reason":"Skipped row 2: contains neither a valid email nor mobile number.","rawRecord":{"Date_Registered":"14/05/2026","Client_Name":"No Contacts Lead","MailBox":"","Ph_No":"","Org":"Missing Corp","CityName":"Delhi","StateCode":"DL","CountryRegion":"India","OwnerEmail":"","StatusText":"GOOD_LEAD_FOLLOW_UP","SourceChannel":"eden_park","PossessionTimeframe":"","ShortDescription":"Should be skipped because no email/phone"}}],"metrics":{"importedCount":4,"skippedCount":1,"successRate":80,"processingTimeMs":19334}}
+[0;32m✅ PASS[0m: Edge cases CSV: returns 200
+[0;34mℹ️  INFO[0m: PARSED_COUNT: 4
+[0;34mℹ️  INFO[0m: SKIPPED_COUNT: 1
+[0;34mℹ️  INFO[0m: METRICS: {'importedCount': 4, 'skippedCount': 1, 'successRate': 80, 'processingTimeMs': 19334}
+[0;32m✅ PASS[0m: Edge cases: SKIP_COUNT_CORRECT: 1 skipped (the no-contact lead)
+[0;32m✅ PASS[0m: Edge cases: PARSE_COUNT_CORRECT: 4 parsed
+[0;32m✅ PASS[0m: Edge cases: ALL_STATUSES_VALID
+[0;32m✅ PASS[0m: Edge cases: ALL_SOURCES_VALID
+[0;34mℹ️  INFO[0m: MULTI_CONTACT_EMAIL: primary@example.com
+[0;34mℹ️  INFO[0m: MULTI_CONTACT_NOTE: Extra Emails: secondary@example.com | Extra Phones: +91 022-1234567 | Metadata: [Date_Registered: Ma
+[0;32m✅ PASS[0m: Edge cases: SECONDARY_IN_NOTE_OK
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 13: PERFORMANCE & BATCH PROCESSING[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: Testing import with 20-row CSV...
+[0;34mℹ️  INFO[0m: 20-row import: Status=200, Time=66s
+[0;32m✅ PASS[0m: Batch 20 rows: returns 200 in 66s
+[0;34mℹ️  INFO[0m: Parsed: 20 out of 20
+[0;32m✅ PASS[0m: Batch 20: processed in 66s (acceptable)
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m TEST GROUP 14: ERROR HANDLING[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;34mℹ️  INFO[0m: DELETE /api/import status: 405
+[0;32m✅ PASS[0m: Error: DELETE method returns 405 (correct rejection)
+[0;32m✅ PASS[0m: Error: PUT returns 405 Method Not Allowed
+[0;32m✅ PASS[0m: Error: GET /api/import returns 404 (not accessible via GET)
+[0;32m✅ PASS[0m: Error: error responses use JSON format with 'error' key
+
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36m[1m FINAL TEST REPORT[0m
+[0;36m[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1m  GROWEASY CRM API TEST RESULTS[0m
+[1m  URL: https://groweasy-crm-api.onrender.com[0m
+[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+  Total Tests Run:  [1m43[0m
+  [0;32m✅ PASSED:[0m         [1m39[0m
+  [0;31m❌ FAILED:[0m         [1m1[0m
+  [1;33m⚠️  WARNINGS:[0m       [1m3[0m
+
+  [1mPass Rate: 90.7%[0m
+
+[0;31m━━━━━━━━━━━━━━ FAILED TESTS ━━━━━━━━━━━━━━[0m
+  [0;31m❌ FAIL: Date formats: returned 502[0m
+
+[1;33m━━━━━━━━━━━━━━ WARNINGS ━━━━━━━━━━━━━━━━━━[0m
+  [1;33m⚠️  WARN: Preview: accepts unknown field 'csv' (may be flexible)[0m
+  [1;33m⚠️  WARN: Preview: empty CSV returned 200 (should be 400/422)[0m
+  [1;33m⚠️  WARN: File size: 5000-row file accepted (no size limit enforced)[0m
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

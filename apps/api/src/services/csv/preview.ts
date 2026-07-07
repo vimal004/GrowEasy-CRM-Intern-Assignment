@@ -1,6 +1,7 @@
 import { CSVMetadata } from '@groweasy/shared';
 import { parseCsv } from './parser';
 import { normalizeRecords } from './normalizer';
+import { CSVError } from '../../utils/errors';
 
 /**
  * Parses the CSV file buffer and returns the structural metadata and the first 15 rows
@@ -19,6 +20,10 @@ export async function generatePreview(
   // Parse all rows from the CSV
   const rawRows = await parseCsv(fileBuffer);
   const normalizedRows = normalizeRecords(rawRows);
+
+  if (normalizedRows.length === 0) {
+    throw new CSVError('The uploaded CSV file is empty or contains no valid data rows.');
+  }
 
   const headers = rawRows.length > 0 ? Object.keys(rawRows[0]) : [];
   const rowCount = normalizedRows.length;

@@ -1,4 +1,4 @@
-import { UploadError } from '../utils/errors';
+import { UploadError, FileTooLargeError } from '../utils/errors';
 import { config } from '../config/env';
 
 /**
@@ -16,7 +16,7 @@ export function validateCsvUpload(file: Express.Multer.File | undefined): void {
   // Validate file size
   if (file.size > config.maxFileSize) {
     const limitMb = (config.maxFileSize / 1024 / 1024).toFixed(0);
-    throw new UploadError(`File size exceeds the limit of ${limitMb}MB.`);
+    throw new FileTooLargeError(`File size exceeds the limit of ${limitMb}MB.`);
   }
 
   // Validate file extension

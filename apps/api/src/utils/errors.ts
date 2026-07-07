@@ -24,6 +24,12 @@ export class UploadError extends BaseError {
   }
 }
 
+export class FileTooLargeError extends BaseError {
+  constructor(message: string, details?: any) {
+    super(message, 413, details);
+  }
+}
+
 export class CSVError extends BaseError {
   constructor(message: string, details?: any) {
     super(message, 422, details);
