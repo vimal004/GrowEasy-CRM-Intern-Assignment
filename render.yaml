@@ -1,0 +1,38 @@
+services:
+  # 1. Deploy the Express API Backend
+  - type: web
+    name: groweasy-crm-api
+    env: node
+    plan: free
+    rootDir: .
+    buildCommand: pnpm build
+    startCommand: pnpm --filter api start
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        sync: false # Set this to your frontend URL after deploying the web service
+      - key: OPENAI_API_KEY
+        sync: false # User can configure this in Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: LLM_PROVIDER
+        value: groq
+
+  # 2. Deploy the Next.js Frontend
+  - type: web
+    name: groweasy-crm-web
+    env: node
+    plan: free
+    rootDir: .
+    buildCommand: pnpm build
+    startCommand: pnpm --filter web start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
