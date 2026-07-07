@@ -60,6 +60,16 @@ export async function validateAndRepair(
     } else if (parsed && !Array.isArray(parsed) && Array.isArray(parsed.data)) {
       parsed = parsed.data;
     }
+
+    // Robust unwrapping of nested arrays (LLM hallucination protection)
+    if (Array.isArray(parsed)) {
+      parsed = parsed.map(item => {
+        if (Array.isArray(item)) {
+          return item[0] || {};
+        }
+        return item;
+      });
+    }
   } catch (err: any) {
     logger.warn(`[ValidationService] JSON Parse failed on attempt ${attempt}: ${err.message}`);
     
