@@ -49,11 +49,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-xs text-on-surface/40 font-medium">
                 <p>© {new Date().getFullYear()} GrowEasy. All rights reserved.</p>
                 <div className="flex space-x-4 mt-2 md:mt-0">
-                  <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+                  <a href="https://groweasy.ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GrowEasy Homepage</a>
                   <span>•</span>
-                  <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
-                  <span>•</span>
-                  <a href="#" className="hover:text-primary transition-colors">API Documentation</a>
+                  <a href="https://groweasy.ai/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Support</a>
                 </div>
               </div>
             </footer>

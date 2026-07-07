@@ -22,8 +22,6 @@ import {
   Download,
   Check,
   RefreshCw,
-  Eye,
-  EyeOff,
   EyeIcon,
 } from 'lucide-react';
 import { LeadCrm, ImportResult } from '@groweasy/shared';
@@ -31,6 +29,32 @@ import { Card, CardContent } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { StatusBadge, getCrmStatusBadgeVariant, formatCrmStatus } from '../../../components/ui/StatusBadge';
 import { cn } from '../../../lib/utils';
+
+interface ExpandableCellProps {
+  value: string;
+  maxLength?: number;
+}
+
+export function ExpandableCell({ value, maxLength = 50 }: ExpandableCellProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  
+  if (value.length <= maxLength) {
+    return <span>{value}</span>;
+  }
+  
+  return (
+    <span 
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsExpanded(!isExpanded);
+      }}
+      className="cursor-pointer hover:text-primary transition-colors duration-150 select-text break-words"
+      title="Click to expand/collapse"
+    >
+      {isExpanded ? value : `${value.substring(0, maxLength - 3)}...`}
+    </span>
+  );
+}
 
 interface ResultsDashboardProps {
   result: ImportResult;
@@ -195,7 +219,7 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
           const src = info.getValue();
           return src ? (
             <span className="text-xs font-semibold px-2 py-0.5 rounded bg-primary/10 text-primary uppercase border border-primary/10">
-              {src.replace('_', ' ')}
+              {src.replace(/_/g, ' ')}
             </span>
           ) : (
             <span className="text-on-surface/30 italic text-xs">Unspecified</span>
@@ -207,10 +231,11 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
         cell: (info) => {
           const notes = info.getValue();
           const cleanNotes = notes ? notes.replace(/\\n/g, ' ') : '';
+          if (!cleanNotes) return <span className="text-on-surface/30 italic text-xs">—</span>;
           return (
-            <span className="text-xs text-on-surface/50 max-w-[200px] truncate block" title={cleanNotes}>
-              {cleanNotes || '—'}
-            </span>
+            <div className="text-xs text-on-surface/50 max-w-[200px]">
+              <ExpandableCell value={cleanNotes} maxLength={30} />
+            </div>
           );
         },
       }),
@@ -410,7 +435,7 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
                         onChange={column.getToggleVisibilityHandler()}
                         className="rounded text-primary border-border focus:ring-primary w-3.5 h-3.5 cursor-pointer"
                       />
-                      <span>{column.id.replace('_', ' ')}</span>
+                      <span>{column.id.replace(/_/g, ' ')}</span>
                     </label>
                   ))}
                 </div>
@@ -543,8 +568,8 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
                         <AlertTriangle className="w-4 h-4 text-error" />
                         <span>{item.reason}</span>
                       </td>
-                      <td className="px-6 py-4 text-xs font-mono text-on-surface/75 max-w-lg truncate">
-                        {JSON.stringify(item.rawRecord)}
+                      <td className="px-6 py-4 text-xs font-mono text-on-surface/75 max-w-lg break-words">
+                        <ExpandableCell value={JSON.stringify(item.rawRecord)} maxLength={60} />
                       </td>
                     </tr>
                   ))

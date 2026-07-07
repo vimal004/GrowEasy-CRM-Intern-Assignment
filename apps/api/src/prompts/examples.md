@@ -85,3 +85,40 @@ Here are examples of how to map input CSV records to standard JSON output.
   }
 ]
 ```
+
+### Example 3: Lead with No Contact Info (Must still be returned by LLM, but will have empty email/mobile lists)
+**Input:**
+```json
+{
+  "created": "14/05/2026",
+  "first_name": "No",
+  "last_name": "Contact",
+  "company_name": "Missing Corp",
+  "location": "Delhi"
+}
+```
+
+**Output:**
+```json
+[
+  {
+    "created_at": "14/05/2026",
+    "name": "No Contact",
+    "emails": [],
+    "mobiles": [],
+    "company": "Missing Corp",
+    "city": "Delhi",
+    "state": "",
+    "country": "",
+    "country_code": "",
+    "lead_owner": "",
+    "crm_status": "",
+    "data_source": "",
+    "possession_time": "",
+    "description": "",
+    "crm_note": "",
+    "unmapped_data": {}
+  }
+]
+```
+

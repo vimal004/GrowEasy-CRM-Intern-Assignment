@@ -10,6 +10,31 @@ import {
 import { FileSpreadsheet, HardDrive, Calendar, Database, Sparkles, AlertCircle, X, ChevronRight } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../../../components/ui/Card';
+interface ExpandableCellProps {
+  value: string;
+  maxLength?: number;
+}
+
+function ExpandableCell({ value, maxLength = 50 }: ExpandableCellProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  
+  if (value.length <= maxLength) {
+    return <span>{value}</span>;
+  }
+  
+  return (
+    <span 
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsExpanded(!isExpanded);
+      }}
+      className="cursor-pointer hover:text-primary transition-colors duration-150 select-text break-words"
+      title="Click to expand/collapse"
+    >
+      {isExpanded ? value : `${value.substring(0, maxLength - 3)}...`}
+    </span>
+  );
+}
 
 interface CSVMetadata {
   fileName: string;
@@ -64,8 +89,7 @@ export function PreviewTable({ metadata, previewRows, onConfirm, onCancel }: Pre
             return <span className="text-on-surface/20 italic">null</span>;
           }
           const strValue = String(value);
-          // Truncate long values for layout safety
-          return strValue.length > 50 ? `${strValue.substring(0, 47)}...` : strValue;
+          return <ExpandableCell value={strValue} maxLength={50} />;
         },
       })
     );

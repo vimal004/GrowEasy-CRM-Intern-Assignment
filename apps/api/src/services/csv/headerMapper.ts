@@ -94,8 +94,8 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
       normKey === 'tel' ||
       normKey === 'telephone'
     ) {
-      // Split comma/semicolon separated list
-      const splitPhones = val.split(/[,;]+/).map(p => p.trim()).filter(Boolean);
+      // Split comma/semicolon/slash separated list
+      const splitPhones = val.split(/[,;\/]+/).map(p => p.trim()).filter(Boolean);
       lead.mobiles.push(...splitPhones);
     }
     // 3. Match Country Code

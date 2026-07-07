@@ -25,10 +25,10 @@ export function UploadDropzone({ onFileAccepted }: UploadDropzoneProps) {
       return;
     }
 
-    // Check size (limit to 50MB for preview)
-    const maxSize = 50 * 1024 * 1024;
+    // Check size (limit to 5MB for preview)
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      setError('File size exceeds the 50MB limit.');
+      setError('File size exceeds the 5MB limit.');
       return;
     }
 
@@ -140,7 +140,7 @@ export function UploadDropzone({ onFileAccepted }: UploadDropzoneProps) {
             </div>
 
             <div className="text-xs text-on-surface/40 pt-2 font-medium">
-              Supported format: .csv (up to 50MB)
+              Supported format: .csv (up to 5MB)
             </div>
 
             {error && (

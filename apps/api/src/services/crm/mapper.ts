@@ -38,8 +38,11 @@ export function mapToCrmLead(
   const emails = raw.emails || [];
   const mobiles = raw.mobiles || [];
 
-  const firstEmail = (emails[0] || '').trim();
-  const firstPhone = (mobiles[0] || '').trim();
+  const firstEmailRaw = (emails[0] || '').trim();
+  const firstEmail = firstEmailRaw.split(/[,;\s]+/)[0]?.trim() || '';
+
+  const firstPhoneRaw = (mobiles[0] || '').trim();
+  const firstPhone = firstPhoneRaw.split(/[,;\/]+/)[0]?.trim() || '';
 
   const countryCode = (raw.country_code || '+91').trim();
   const cleanMobile = cleanMobileNumber(firstPhone, countryCode);

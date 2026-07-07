@@ -97,9 +97,9 @@ export function UploadProgress({ file, onComplete, onCancel }: UploadProgressPro
         <CardContent className="space-y-6 pt-2">
           {/* Progress Circular/Percentage Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Loader2 className="w-5 h-5 text-primary animate-spin" />
-              <span className="font-bold text-sm text-on-background truncate max-w-[280px] md:max-w-sm">
+            <div className="flex items-center space-x-3 min-w-0">
+              <Loader2 className="w-5 h-5 text-primary animate-spin flex-shrink-0" />
+              <span className="font-bold text-sm text-on-background truncate">
                 {update.stage}
               </span>
             </div>
