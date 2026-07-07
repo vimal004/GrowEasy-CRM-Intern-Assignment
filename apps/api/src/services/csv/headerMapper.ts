@@ -78,11 +78,15 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
     else if (
       normKey === 'phone' ||
       normKey === 'phonenumber' ||
+      normKey === 'phoneno' ||
+      normKey === 'phnumber' ||
       normKey === 'mobile' ||
       normKey === 'mobiles' ||
       normKey === 'mobilenumber' ||
+      normKey === 'mobilewithoutcountrycode' ||
       normKey === 'contact' ||
       normKey === 'contactnumber' ||
+      normKey === 'contactphone' ||
       normKey === 'phno' ||
       normKey === 'phones' ||
       normKey === 'primaryphone' ||

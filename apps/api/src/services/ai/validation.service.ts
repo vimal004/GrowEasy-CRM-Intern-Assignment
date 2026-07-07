@@ -74,7 +74,9 @@ export async function validateAndRepair(
 
     // 3. Auto-detect and unwrap array wrapped inside an object
     if (parsed && !Array.isArray(parsed)) {
-      const arrayKey = Object.keys(parsed).find(key => Array.isArray(parsed[key]));
+      // Prefer the largest non-empty array to avoid picking an empty metadata key first
+      const arrayKeys = Object.keys(parsed).filter(key => Array.isArray(parsed[key]));
+      const arrayKey = arrayKeys.sort((a, b) => parsed[b].length - parsed[a].length)[0];
       if (arrayKey) {
         parsed = parsed[arrayKey];
       } else if (parsed.name || parsed.email || parsed.emails || parsed.mobiles || parsed.mobile_without_country_code) {

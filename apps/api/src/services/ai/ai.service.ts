@@ -9,8 +9,8 @@ import { MockProvider } from './providers/mock.provider';
 import { processInBatches } from './batch.service';
 import { withRetry } from './retry.service';
 import { validateAndRepair } from './validation.service';
-import { mapToCrmLead } from '../crm/mapper';
-import { mapRowHeaders } from '../csv/headerMapper';
+import { mapToCrmLead, RawExtractedLead } from '../crm/mapper';
+import { mapRowHeaders, DeterministicLead } from '../csv/headerMapper';
 import { config } from '../../config/env';
 import { logger } from '../../config/logger';
 import { AIError } from '../../utils/errors';
@@ -55,6 +55,41 @@ export function getLlmProvider(): LLMProvider {
 }
 
 /**
+ * Returns a fallback LLM provider when the primary one fails.
+ * Falls back to Gemini → OpenAI → Mock.
+ */
+function getFallbackProvider(primary: LLMProvider): LLMProvider | null {
+  if (primary.name === 'openai') return new GeminiProvider();
+  if (primary.name === 'gemini') return new OpenAIProvider();
+  return null;
+}
+
+/**
+ * Converts a DeterministicLead (post-headerMapper) directly to a RawExtractedLead
+ * without invoking the LLM. Used when contacts are already reliably identified.
+ */
+function deterministicToRaw(lead: DeterministicLead): RawExtractedLead {
+  return {
+    created_at: lead.created_at,
+    name: lead.name,
+    emails: lead.emails,
+    mobiles: lead.mobiles,
+    company: lead.company,
+    city: lead.city,
+    state: lead.state,
+    country: lead.country,
+    country_code: lead.country_code,
+    lead_owner: lead.lead_owner,
+    crm_status: lead.crm_status,
+    data_source: lead.data_source,
+    possession_time: lead.possession_time,
+    description: lead.description,
+    crm_note: lead.crm_note,
+    unmapped_data: lead.unmapped_data,
+  };
+}
+
+/**
  * Runs the complete AI Lead Import pipeline on an array of raw CSV rows.
  * 
  * @param rawRecords The raw CSV rows parsed from the input file.
@@ -86,45 +121,106 @@ export async function runImportPipeline(
   const extractionPrompt = loadPromptFile('extraction.md');
   const repairPrompt = loadPromptFile('repair.md');
 
-  const preMappedRecords = rawRecords.map(mapRowHeaders);
-
-  // Process in configurable batches
-  const batchSize = config.batchSize;
-  const rawExtractedLeads = await processInBatches(
-    preMappedRecords,
-    batchSize,
-    async (batch, batchIndex, totalBatches) => {
-      // Execute the LLM call with exponential backoff retry
-      const rawResponse = await withRetry(() =>
-        provider.extractLeads(batch, systemPrompt, extractionPrompt)
-      );
-
-      // Validate the JSON structure and repair if required
-      const validatedBatch = await validateAndRepair(
-        rawResponse,
-        provider,
-        repairPrompt,
-        systemPrompt
-      );
-
-      return validatedBatch;
-    }
-  );
-
-  // Map raw extracted leads to CRM format, applying validation and skipping rules
   const importedRecords: LeadCrm[] = [];
   const skippedRecords: ImportResult['skippedRecords'] = [];
 
-  logger.info(`[AIService] Mapping ${rawExtractedLeads.length} AI-extracted leads to CRM schemas.`);
+  const preMappedRecords = rawRecords.map(mapRowHeaders);
 
-  rawExtractedLeads.forEach((rawLead, index) => {
-    // Correlate with original raw CSV record by index
-    const originalRecord = rawRecords[index] || {};
-    const rowIndex = index + 1;
+  // ─── Fast path / LLM path split ────────────────────────────────────────────
+  // Records where deterministic mapping already found contacts bypass the LLM.
+  // Records with no contacts need LLM to extract them from notes/description/unmapped.
+  const fastPathLeads: { originalIndex: number; lead: RawExtractedLead }[] = [];
+  const llmRecords: { originalIndex: number; record: DeterministicLead }[] = [];
 
-    const { lead, reason } = mapToCrmLead(rawLead, rowIndex);
-    if (lead) {
-      importedRecords.push(lead);
+  preMappedRecords.forEach((record, index) => {
+    const hasEmail = record.emails.length > 0;
+    const hasMobile = record.mobiles.length > 0;
+
+    if (hasEmail || hasMobile) {
+      // Already mapped — convert deterministically, no LLM needed
+      fastPathLeads.push({ originalIndex: index, lead: deterministicToRaw(record) });
+    } else {
+      // No contacts found yet — send to LLM to extract from notes/description
+      llmRecords.push({ originalIndex: index, record });
+    }
+  });
+
+  logger.info(`[AIService] Fast-path (deterministic): ${fastPathLeads.length} records. LLM path: ${llmRecords.length} records.`);
+
+  // ─── LLM path ──────────────────────────────────────────────────────────────
+  const llmExtracted: { originalIndex: number; lead: RawExtractedLead }[] = [];
+
+  if (llmRecords.length > 0) {
+    const batchSize = config.batchSize;
+    const llmBatchInput = llmRecords.map(r => r.record);
+
+    let llmResults: RawExtractedLead[] = [];
+    try {
+      llmResults = await processInBatches(
+        llmBatchInput,
+        batchSize,
+        async (batch, batchIndex, totalBatches) => {
+          const rawResponse = await withRetry(() =>
+            provider.extractLeads(batch, systemPrompt, extractionPrompt)
+          );
+          return validateAndRepair(rawResponse, provider, repairPrompt, systemPrompt);
+        }
+      );
+    } catch (err: any) {
+      // Try fallback provider before giving up
+      const fallback = getFallbackProvider(provider);
+      if (fallback) {
+        logger.warn(`[AIService] Primary provider (${provider.name}) failed. Trying fallback: ${fallback.name}`);
+        try {
+          llmResults = await processInBatches(
+            llmBatchInput,
+            batchSize,
+            async (batch) => {
+              const rawResponse = await withRetry(() =>
+                fallback.extractLeads(batch, systemPrompt, extractionPrompt)
+              );
+              return validateAndRepair(rawResponse, fallback, repairPrompt, systemPrompt);
+            }
+          );
+        } catch (fallbackErr: any) {
+          logger.error(`[AIService] Fallback provider (${fallback.name}) also failed:`, fallbackErr.message);
+          throw err; // Re-throw original error
+        }
+      } else {
+        throw err;
+      }
+    }
+
+    // Align LLM output to original indices — guard against count mismatch
+    llmRecords.forEach((entry, batchIdx) => {
+      const extractedLead = llmResults[batchIdx];
+      if (extractedLead) {
+        llmExtracted.push({ originalIndex: entry.originalIndex, lead: extractedLead });
+      } else {
+        logger.warn(`[AIService] LLM returned no result for batch index ${batchIdx} (original row ${entry.originalIndex + 1}). Skipping.`);
+        skippedRecords.push({
+          rowIndex: entry.originalIndex + 1,
+          reason: `Skipped row ${entry.originalIndex + 1}: contains neither a valid email nor mobile number.`,
+          rawRecord: rawRecords[entry.originalIndex] || {},
+        });
+      }
+    });
+  }
+
+  // ─── Merge and sort by original index ──────────────────────────────────────
+  const allExtracted = [...fastPathLeads, ...llmExtracted].sort(
+    (a, b) => a.originalIndex - b.originalIndex
+  );
+
+  logger.info(`[AIService] Mapping ${allExtracted.length} leads to CRM schema.`);
+
+  allExtracted.forEach(({ originalIndex, lead }) => {
+    const originalRecord = rawRecords[originalIndex] || {};
+    const rowIndex = originalIndex + 1;
+
+    const { lead: crmLead, reason } = mapToCrmLead(lead, rowIndex);
+    if (crmLead) {
+      importedRecords.push(crmLead);
     } else {
       skippedRecords.push({
         rowIndex,
@@ -151,3 +247,4 @@ export async function runImportPipeline(
     },
   };
 }
+
