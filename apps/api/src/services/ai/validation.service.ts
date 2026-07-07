@@ -6,25 +6,26 @@ import { logger } from '../../config/logger';
 
 // Zod schema for validating the raw LLM output before final mapping
 export const RawExtractedLeadSchema = z.object({
-  created_at: z.string().optional().default(''),
-  name: z.string().optional().default(''),
-  emails: z.array(z.string()).catch([]).default([]),
-  mobiles: z.array(z.string()).catch([]).default([]),
-  company: z.string().optional().default(''),
-  city: z.string().optional().default(''),
-  state: z.string().optional().default(''),
-  country: z.string().optional().default(''),
-  country_code: z.string().optional().default(''),
-  lead_owner: z.string().optional().default(''),
-  crm_status: z.string().optional().default(''),
-  data_source: z.string().optional().default(''),
-  possession_time: z.string().optional().default(''),
-  description: z.string().optional().default(''),
-  crm_note: z.string().optional().default(''),
+  created_at: z.coerce.string().catch('').default(''),
+  name: z.coerce.string().catch('').default(''),
+  emails: z.array(z.coerce.string()).catch([]).default([]),
+  mobiles: z.array(z.coerce.string()).catch([]).default([]),
+  company: z.coerce.string().catch('').default(''),
+  city: z.coerce.string().catch('').default(''),
+  state: z.coerce.string().catch('').default(''),
+  country: z.coerce.string().catch('').default(''),
+  country_code: z.coerce.string().catch('').default(''),
+  lead_owner: z.coerce.string().catch('').default(''),
+  crm_status: z.coerce.string().catch('').default(''),
+  data_source: z.coerce.string().catch('').default(''),
+  possession_time: z.coerce.string().catch('').default(''),
+  description: z.coerce.string().catch('').default(''),
+  crm_note: z.coerce.string().catch('').default(''),
   unmapped_data: z.record(z.any()).catch({}).default({}),
-});
+}).passthrough();
 
-export const RawExtractedLeadsSchema = z.array(RawExtractedLeadSchema);
+// Use .catch([]) so any completely malformed LLM output returns [] instead of crashing
+export const RawExtractedLeadsSchema = z.array(RawExtractedLeadSchema).catch([]);
 
 /**
  * Validates a raw JSON string output from the LLM, attempts to parse it,
@@ -46,17 +47,33 @@ export async function validateAndRepair(
 ): Promise<RawExtractedLead[]> {
   let cleaned = rawOutput.trim();
 
-  // Strip code fences if the model output them despite instructions
-  if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```[a-zA-Z]*\n/, '').replace(/\n```$/, '').trim();
-  }
-
   let parsed: any;
   try {
-    // If output has multiple outer brackets or is wrapped in key like { "leads": [...] }
-    parsed = JSON.parse(cleaned);
-    
-    // Auto-detect and unwrap array wrapped inside an object
+    // 1. Clean code fences
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```[a-zA-Z]*\n/, '').replace(/\n```$/, '').trim();
+    }
+
+    // 2. Resilient JSON extraction and parsing
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (err) {
+      // Attempt to extract JSON array
+      const arrayMatch = cleaned.match(/\[\s*\{[\s\S]*\}\s*\]/);
+      if (arrayMatch) {
+        parsed = JSON.parse(arrayMatch[0]);
+      } else {
+        // Attempt to extract single JSON object
+        const objectMatch = cleaned.match(/\{\s*"[\s\S]*\}\s*/);
+        if (objectMatch) {
+          parsed = JSON.parse(objectMatch[0]);
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    // 3. Auto-detect and unwrap array wrapped inside an object
     if (parsed && !Array.isArray(parsed)) {
       const arrayKey = Object.keys(parsed).find(key => Array.isArray(parsed[key]));
       if (arrayKey) {
@@ -67,20 +84,69 @@ export async function validateAndRepair(
       }
     }
 
-    // Robust unwrapping of nested arrays (LLM hallucination protection)
+    // 4. Robust unwrapping of nested arrays and filtering out non-object elements
     if (Array.isArray(parsed)) {
-      parsed = parsed.map(item => {
-        if (Array.isArray(item)) {
-          return item[0] || {};
-        }
-        return item;
-      });
+      parsed = parsed
+        .filter(item => item !== null && typeof item === 'object')
+        .map(item => {
+          if (Array.isArray(item)) {
+            item = item[0] || {};
+          }
+
+          // 5. Force strict type-coercion to guarantee Zod schema validation success
+          // Ensure emails is string[]
+          if (item.emails !== undefined && item.emails !== null) {
+            if (typeof item.emails === 'string') {
+              item.emails = [item.emails];
+            } else if (!Array.isArray(item.emails)) {
+              item.emails = [];
+            }
+          } else {
+            item.emails = [];
+          }
+
+          // Ensure mobiles is string[]
+          if (item.mobiles !== undefined && item.mobiles !== null) {
+            if (typeof item.mobiles === 'string') {
+              item.mobiles = [item.mobiles];
+            } else if (!Array.isArray(item.mobiles)) {
+              item.mobiles = [];
+            }
+          } else {
+            item.mobiles = [];
+          }
+
+          // Ensure unmapped_data is Record<string, any>
+          if (item.unmapped_data !== undefined && item.unmapped_data !== null) {
+            if (typeof item.unmapped_data !== 'object' || Array.isArray(item.unmapped_data)) {
+              item.unmapped_data = {};
+            }
+          } else {
+            item.unmapped_data = {};
+          }
+
+          // Force basic text fields to string
+          const textFields = [
+            'created_at', 'name', 'company', 'city', 'state', 'country',
+            'country_code', 'lead_owner', 'crm_status', 'data_source',
+            'possession_time', 'description', 'crm_note'
+          ];
+          textFields.forEach(field => {
+            if (item[field] !== undefined && item[field] !== null) {
+              item[field] = String(item[field]);
+            } else {
+              item[field] = '';
+            }
+          });
+
+          return item;
+        });
     }
   } catch (err: any) {
     logger.warn(`[ValidationService] JSON Parse failed on attempt ${attempt}: ${err.message}`);
     
     if (attempt >= 2) {
-      throw new AIError(`Repaired output is still invalid JSON: ${err.message}`);
+      throw new AIError(`Repaired output is still invalid JSON: ${err.message}. Raw output: ${cleaned}`);
     }
 
     return handleRepair(
@@ -100,7 +166,7 @@ export async function validateAndRepair(
     logger.warn(`[ValidationService] Schema validation failed on attempt ${attempt}: ${errorDetails}`);
 
     if (attempt >= 2) {
-      throw new AIError(`Repaired output failed schema validation: ${errorDetails}`);
+      throw new AIError(`Repaired output failed schema validation: ${errorDetails}. Raw output: ${cleaned}`);
     }
 
     return handleRepair(
