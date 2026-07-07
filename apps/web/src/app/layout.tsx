@@ -47,11 +47,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Footer */}
             <footer className="w-full border-t border-border/40 bg-surface/50 py-6">
               <div className="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-xs text-on-surface/40 font-medium">
-                <p>© {new Date().getFullYear()} GrowEasy. All rights reserved.</p>
+                <p>GrowEasy CRM — Intern Assignment</p>
                 <div className="flex space-x-4 mt-2 md:mt-0">
-                  <a href="https://groweasy.ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GrowEasy Homepage</a>
-                  <span>•</span>
-                  <a href="https://groweasy.ai/contact" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Support</a>
+                  <span className="text-on-surface/30">AI-Powered CSV Importer</span>
                 </div>
               </div>
             </footer>

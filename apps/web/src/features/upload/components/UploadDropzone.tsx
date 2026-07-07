@@ -111,7 +111,7 @@ export function UploadDropzone({ onFileAccepted }: UploadDropzoneProps) {
           tabIndex={0}
           role="button"
           aria-label="Upload CSV Lead File"
-          className={`relative border border-dashed rounded-3xl p-12 text-center transition-all duration-300 ease-emphasized cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-4 select-none ${
+          className={`relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-300 ease-emphasized cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-4 select-none ${
             isDragActive
               ? 'border-primary bg-primary-container/10 scale-[1.01] shadow-elevation1'
               : 'border-border hover:border-primary/50 hover:bg-on-background/5'
@@ -162,23 +162,39 @@ export function UploadDropzone({ onFileAccepted }: UploadDropzoneProps) {
         {[
           {
             icon: Brain,
-            title: 'Intelligent AI Mapping',
-            desc: 'Detects unstructured fields like "Ph. Number" or "e-mail" and maps them to target CRM attributes automatically.',
+            title: 'AI Auto-Repair & Retry',
+            desc: (
+              <>
+                Handles API rate-limits via <strong className="text-on-background font-bold">exponential backoff</strong> and automatically <strong className="text-on-background font-bold">repairs corrupted JSON</strong> structures.
+              </>
+            ),
           },
           {
             icon: Filter,
-            title: 'Smart Filtering',
-            desc: 'Detects and filters out incomplete leads missing both email and phone numbers automatically.',
+            title: 'Streaming CSV Parser',
+            desc: (
+              <>
+                Processes massive datasets using memory-safe <strong className="text-on-background font-bold">Node.js streams</strong>, keeping a zero-memory-bloat footprint on the server.
+              </>
+            ),
           },
           {
             icon: Sparkles,
-            title: 'Lead Enrichment',
-            desc: 'Extracts secondary contacts and stores leftover metadata into structured Lead Notes.',
+            title: 'Data Scrubbing & Notes',
+            desc: (
+              <>
+                Normalizes contact records while compiling all secondary numbers, emails, and unmapped metadata into consolidated <strong className="text-on-background font-bold">crm_note</strong> fields.
+              </>
+            ),
           },
           {
             icon: ShieldCheck,
-            title: 'CRM Compliance',
-            desc: 'Normalizes date formats, checks statuses, and enforces constraints to keep lead directories clean.',
+            title: 'Virtualized Results Grid',
+            desc: (
+              <>
+                Renders thousands of leads instantly with <strong className="text-on-background font-bold">sticky headers</strong>, column toggles, quick search filters, and raw row-level exclusions.
+              </>
+            ),
           },
         ].map((feat, i) => (
           <motion.div
@@ -187,7 +203,7 @@ export function UploadDropzone({ onFileAccepted }: UploadDropzoneProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3 + i * 0.05, ease: 'easeOut' }}
           >
-            <Card variant="outlined" padding="sm" className="h-full border-border/60 hover:bg-on-background/5">
+            <Card variant="outlined" padding="sm" className="h-full border-border/60 hover:bg-on-background/5 hover:border-primary/30 transition-all duration-300">
               <CardContent className="space-y-3 pt-2">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                   <feat.icon className="w-4 h-4" />
