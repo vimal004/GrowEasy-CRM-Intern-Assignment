@@ -64,11 +64,17 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
     if (
       normKey === 'email' ||
       normKey === 'emailaddress' ||
+      normKey === 'emailid' ||
       normKey === 'emails' ||
       normKey === 'mailbox' ||
       normKey === 'primaryemail' ||
       normKey === 'contactemail' ||
-      normKey === 'mail'
+      normKey === 'mail' ||
+      normKey === 'emailid' ||
+      normKey === 'leademail' ||
+      normKey === 'emailids' ||
+      normKey === 'workmail' ||
+      normKey === 'workemail'
     ) {
       // Split comma/semicolon separated list
       const splitEmails = val.split(/[,;\s]+/).map(e => e.trim()).filter(Boolean);
@@ -80,19 +86,39 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
       normKey === 'phonenumber' ||
       normKey === 'phoneno' ||
       normKey === 'phnumber' ||
+      normKey === 'phno' ||
       normKey === 'mobile' ||
       normKey === 'mobiles' ||
       normKey === 'mobilenumber' ||
       normKey === 'mobilewithoutcountrycode' ||
+      normKey === 'mobilephone' ||
+      normKey === 'mobileno' ||
       normKey === 'contact' ||
       normKey === 'contactnumber' ||
       normKey === 'contactphone' ||
-      normKey === 'phno' ||
       normKey === 'phones' ||
       normKey === 'primaryphone' ||
       normKey === 'primarymobile' ||
       normKey === 'tel' ||
-      normKey === 'telephone'
+      normKey === 'telephone' ||
+      normKey === 'whatsapp' ||
+      normKey === 'whatsappnumber' ||
+      normKey === 'whatsappno' ||
+      normKey === 'cell' ||
+      normKey === 'cellphone' ||
+      normKey === 'cellnumber' ||
+      normKey === 'landline' ||
+      normKey === 'alternatephoneno' ||
+      normKey === 'alternateno' ||
+      normKey === 'alternatenumber' ||
+      normKey === 'altphone' ||
+      normKey === 'altmobile' ||
+      normKey === 'homephone' ||
+      normKey === 'officephone' ||
+      normKey === 'officenumber' ||
+      normKey === 'phone1' ||
+      normKey === 'phone2' ||
+      normKey === 'mob'
     ) {
       // Split comma/semicolon/slash separated list
       const splitPhones = val.split(/[,;\/]+/).map(p => p.trim()).filter(Boolean);
@@ -107,9 +133,9 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
       lead.country_code = val;
     }
     // 4. Match Name variations
-    else if (normKey === 'firstname' || normKey === 'fname' || normKey === 'first') {
+    else if (normKey === 'firstname' || normKey === 'fname' || normKey === 'first' || normKey === 'givenname') {
       firstNames.push(val);
-    } else if (normKey === 'lastname' || normKey === 'lname' || normKey === 'last') {
+    } else if (normKey === 'lastname' || normKey === 'lname' || normKey === 'last' || normKey === 'surname' || normKey === 'familyname') {
       lastNames.push(val);
     } else if (
       normKey === 'name' ||
@@ -119,7 +145,11 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
       normKey === 'contactname' ||
       normKey === 'customername' ||
       normKey === 'username' ||
-      normKey === 'lead'
+      normKey === 'lead' ||
+      normKey === 'prospectname' ||
+      normKey === 'applicantname' ||
+      normKey === 'candidatename' ||
+      normKey === 'personname'
     ) {
       nameParts.push(val);
     }
@@ -128,9 +158,17 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
       normKey === 'company' ||
       normKey === 'companyname' ||
       normKey === 'org' ||
+      normKey === 'orgname' ||
       normKey === 'organization' ||
+      normKey === 'organisationname' ||
+      normKey === 'organizationname' ||
       normKey === 'business' ||
-      normKey === 'employer'
+      normKey === 'businessname' ||
+      normKey === 'employer' ||
+      normKey === 'firm' ||
+      normKey === 'firmname' ||
+      normKey === 'institute' ||
+      normKey === 'institutename'
     ) {
       lead.company = val;
     }
@@ -221,7 +259,16 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
       normKey === 'datecreated' ||
       normKey === 'createddate' ||
       normKey === 'registrationdate' ||
-      normKey === 'registered'
+      normKey === 'registered' ||
+      normKey === 'dateregistered' ||
+      normKey === 'timestamp' ||
+      normKey === 'datetime' ||
+      normKey === 'enquirydate' ||
+      normKey === 'leaddate' ||
+      normKey === 'leadcreated' ||
+      normKey === 'entrydate' ||
+      normKey === 'submissiondate' ||
+      normKey === 'datesubmitted'
     ) {
       lead.created_at = val;
     }

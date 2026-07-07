@@ -264,4 +264,83 @@ test('CRM Formatter - formatDate ambiguous dates', () => {
   assert.strictEqual(date.getUTCDate(), 5);
 });
 
+// ─── New tests for AI/Prompt Engineering improvements ──────────────────────────
 
+test('CRM Lead Mapper - crm_status unknown value returns "" (no silent coercion)', () => {
+  // A value with zero CRM signal keywords must fall through to "" — never GOOD_LEAD_FOLLOW_UP
+  const lead: RawExtractedLead = {
+    name: 'Test Lead',
+    emails: ['test@example.com'],
+    mobiles: ['9876543210'],
+    crm_status: 'pending review stage xyz',
+  };
+  const { lead: result } = mapToCrmLead(lead, 1);
+  assert.ok(result);
+  assert.strictEqual(result.crm_status, '');
+});
+
+test('CRM Lead Mapper - crm_status fuzzy keywords: new terms (booked/converted/voicemail/hot/callback)', () => {
+  const cases: Array<{ status: string; expected: string }> = [
+    { status: 'booked the property',         expected: 'SALE_DONE' },
+    { status: 'converted to customer',        expected: 'SALE_DONE' },
+    { status: 'went to voicemail',            expected: 'DID_NOT_CONNECT' },
+    { status: 'phone switched off',           expected: 'DID_NOT_CONNECT' },
+    { status: 'not interested at all',        expected: 'BAD_LEAD' },
+    { status: 'unqualified lead',             expected: 'BAD_LEAD' },
+    { status: 'hot prospect callback needed', expected: 'GOOD_LEAD_FOLLOW_UP' },
+    { status: 'callback requested',           expected: 'GOOD_LEAD_FOLLOW_UP' },
+  ];
+  for (const { status, expected } of cases) {
+    const { lead: result } = mapToCrmLead(
+      { name: 'Lead', emails: ['l@e.com'], mobiles: [], crm_status: status },
+      1
+    );
+    assert.ok(result, `Should not skip for status: ${status}`);
+    assert.strictEqual(result.crm_status, expected,
+      `Expected "${expected}" for status "${status}" but got "${result.crm_status}"`);
+  }
+});
+
+test('Header Mapper - new column name variants (WhatsApp, Cell, Surname, GivenName, OrgName)', () => {
+  const rawRow: Record<string, string> = {
+    'Given Name':      'Jane',
+    'Surname':         'Doe',
+    'Work Email':      'jane.doe@company.com',
+    'WhatsApp Number': '9876543210',
+    'Cell':            '9988776655',
+    'Org Name':        'Startup Inc',
+    'Enquiry Date':    '2026-05-20',
+    'Home Phone':      '022-1234567',
+    'Alt Mobile':      '9123456789',
+  };
+  const mapped = mapRowHeaders(rawRow);
+  assert.strictEqual(mapped.name, 'Jane Doe',                     'Given Name + Surname should combine');
+  assert.ok(mapped.emails.includes('jane.doe@company.com'),        'Work Email should be captured');
+  assert.ok(mapped.mobiles.includes('9876543210'),                 'WhatsApp Number should be captured');
+  assert.ok(mapped.mobiles.includes('9988776655'),                 'Cell should be captured');
+  assert.ok(mapped.mobiles.includes('022-1234567'),                'Home Phone should be captured');
+  assert.ok(mapped.mobiles.includes('9123456789'),                 'Alt Mobile should be captured');
+  assert.strictEqual(mapped.company, 'Startup Inc',                'Org Name should map to company');
+  assert.strictEqual(mapped.created_at, '2026-05-20',             'Enquiry Date should map to created_at');
+});
+
+test('Mock Provider - empty batch returns empty JSON array', async () => {
+  const provider = new MockProvider();
+  const rawOutput = await provider.extractLeads([], 'system', 'extraction');
+  const parsed = JSON.parse(rawOutput);
+  assert.ok(Array.isArray(parsed));
+  assert.strictEqual(parsed.length, 0);
+});
+
+test('CRM Lead Mapper - all 4 exact crm_status enum values accepted without modification', () => {
+  const statuses = ['GOOD_LEAD_FOLLOW_UP', 'DID_NOT_CONNECT', 'BAD_LEAD', 'SALE_DONE'] as const;
+  for (const status of statuses) {
+    const { lead: result } = mapToCrmLead(
+      { name: 'Lead', emails: ['l@e.com'], mobiles: ['9876543210'], crm_status: status },
+      1
+    );
+    assert.ok(result, `Lead should not be skipped for status: ${status}`);
+    assert.strictEqual(result.crm_status, status,
+      `Exact enum value ${status} should be preserved unchanged`);
+  }
+});

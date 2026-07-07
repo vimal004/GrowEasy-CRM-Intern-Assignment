@@ -11,7 +11,7 @@ export interface LeadCrm {
   state: string;
   country: string;
   lead_owner: string;
-  crm_status: CrmStatus;
+  crm_status: CrmStatus | '';
   crm_note: string;
   data_source: DataSource | '';
   possession_time: string;

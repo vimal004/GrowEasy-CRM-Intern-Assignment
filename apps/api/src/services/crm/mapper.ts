@@ -59,55 +59,52 @@ export function mapToCrmLead(
   }
 
   // 2. Resolve and restrict Enums
-  let crmStatus: CrmStatus = 'GOOD_LEAD_FOLLOW_UP';
-  if (raw.crm_status) {
+  // The LLM prompt already performs fuzzy normalization; the mapper provides a robust
+  // safety net for any values that slip through. If a value cannot be confidently mapped,
+  // it returns "" (empty string) — never silently defaults to GOOD_LEAD_FOLLOW_UP.
+  let crmStatus: CrmStatus | '' = '';
+  if (raw.crm_status && raw.crm_status.trim() !== '') {
     // Normalize: uppercase, collapse spaces/underscores/hyphens to underscore
     const rawStatus = raw.crm_status.trim().toUpperCase().replace(/[\s_-]+/g, '_');
     if (CRM_STATUSES.includes(rawStatus as CrmStatus)) {
       crmStatus = rawStatus as CrmStatus;
     } else {
-      // Collapse further to detect word presence reliably
-      const statusWords = raw.crm_status.trim().toLowerCase().replace(/[\s_-]+/g, ' ');
+      // Safety-net fuzzy match using whole-word regex to avoid partial substring false positives
+      // (e.g. "interest" must NOT match "interesting" or "not interested later")
+      const sw = raw.crm_status.trim().toLowerCase();
+      const hasWord = (word: string) => new RegExp(`\\b${word}\\b`).test(sw);
+
       if (
-        statusWords.includes('sale') ||
-        statusWords.includes('done') ||
-        statusWords.includes('close') ||
-        statusWords.includes('sold') ||
-        statusWords.includes('won')
+        hasWord('sale') || hasWord('done') || hasWord('close') || hasWord('closed') ||
+        hasWord('sold') || hasWord('won') || hasWord('booked') || hasWord('converted')
       ) {
         crmStatus = 'SALE_DONE';
       } else if (
-        statusWords.includes('did not') ||
-        statusWords.includes('not connect') ||
-        statusWords.includes('no answer') ||
-        statusWords.includes('busy') ||
-        statusWords.includes('unreachable') ||
-        statusWords.includes('no response') ||
-        (statusWords.includes('not') && statusWords.includes('connect'))
+        hasWord('voicemail') || hasWord('unreachable') || hasWord('busy') ||
+        sw.includes('did not') || sw.includes('not connect') || sw.includes('no answer') ||
+        sw.includes('no response') || sw.includes('switched off')
       ) {
         crmStatus = 'DID_NOT_CONNECT';
       } else if (
-        statusWords.includes('bad') ||
-        statusWords.includes('junk') ||
-        statusWords.includes('spam') ||
-        statusWords.includes('invalid') ||
-        statusWords.includes('wrong') ||
-        statusWords.includes('fake')
+        hasWord('junk') || hasWord('spam') || hasWord('fake') || hasWord('unqualified') ||
+        sw.includes('bad lead') || sw.includes('not interested') || sw.includes('wrong number') ||
+        sw.includes('invalid number')
       ) {
         crmStatus = 'BAD_LEAD';
       } else if (
-        statusWords.includes('good') ||
-        statusWords.includes('interest') ||
-        statusWords.includes('follow') ||
-        statusWords.includes('prospect') ||
-        statusWords.includes('warm')
+        hasWord('good') || hasWord('warm') || hasWord('hot') || hasWord('callback') ||
+        hasWord('prospect') || sw.includes('follow up') || sw.includes('follow-up') ||
+        sw.includes('interested') && !sw.includes('not interested')
       ) {
         crmStatus = 'GOOD_LEAD_FOLLOW_UP';
       } else {
-        crmStatus = 'GOOD_LEAD_FOLLOW_UP';
+        // Cannot confidently map — return empty string per spec.
+        // The LLM should have handled this; if it reaches here the value is truly unknown.
+        crmStatus = '';
       }
     }
   }
+
 
   let dataSource: DataSource | '' = '';
   if (raw.data_source) {
