@@ -1,0 +1,26 @@
+# Cursor rules for GrowEasy AI CSV Importer
+
+You are an expert full-stack developer working on the GrowEasy AI CSV Importer. Follow these instructions exactly:
+
+## General Rules
+- Monorepo using `pnpm` workspaces: Next.js (`apps/web`), Express (`apps/api`), Shared library (`packages/shared`).
+- Avoid installing dependencies unless approved.
+- Use TypeScript strictly. No `any` type.
+- Shared schemas: Always use and expand `packages/shared/src/schemas/lead.ts` (Zod schemas) and shared types (`packages/shared/src/types/lead.ts`) to validate both frontend forms/tables and backend requests.
+
+## Frontend Rules (`apps/web`)
+- React 18, Next.js 14 App Router, Tailwind CSS, TanStack Query.
+- Aesthetic should be high-quality dark mode (harmonies, subtle gradients, Outfit/Google Sans typography, sleek scrollbars).
+- CSV Preview Table: Must support sticky headers, horizontal & vertical scrolling, and responsive design. Support table virtualization for large uploads (>5000 rows).
+- Only send request to AI backend when user clicks the "Confirm Import" button.
+
+## Backend Rules (`apps/api`)
+- Express, TypeScript, csv-parser, Winston logging.
+- AI service uses structured outputs to extract lead fields dynamically:
+  - Allowed status values: `GOOD_LEAD_FOLLOW_UP`, `DID_NOT_CONNECT`, `BAD_LEAD`, `SALE_DONE`.
+  - Allowed data sources: `leads_on_demand`, `meridian_tower`, `eden_park`, `varah_swamy`, `sarjapur_plots`.
+  - Date validation: `created_at` must convert using `new Date(created_at)`.
+  - Handle multiple emails/mobiles: Keep first, move additional into `crm_note`.
+  - Skip condition: Skip records containing NEITHER email nor mobile number.
+- Batch processing: Send records to AI in batches of 10-25 with an exponential backoff retry mechanism.
+- Escape line breaks in CRM strings to keep them single-line CSV compatible.
