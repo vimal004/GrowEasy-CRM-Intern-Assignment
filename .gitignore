@@ -1,13 +1,14 @@
-node_modules
+node_modules/
 .env
 .env.local
 .env.production
-.next
-.turbo
-dist
-out
+.next/
+.turbo/
+dist/
+out/
 .DS_Store
 *.log
 
 # Assignment PDF (131KB with embedded images)
 Software Developer (Intern _ Full-Time) Assignment.md
+

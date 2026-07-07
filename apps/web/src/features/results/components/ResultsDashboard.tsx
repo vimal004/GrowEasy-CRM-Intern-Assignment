@@ -39,20 +39,30 @@ export function ExpandableCell({ value, maxLength = 50 }: ExpandableCellProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   
   if (value.length <= maxLength) {
-    return <span>{value}</span>;
+    return <span className="select-text break-words">{value}</span>;
   }
   
   return (
-    <span 
-      onClick={(e) => {
-        e.stopPropagation();
-        setIsExpanded(!isExpanded);
-      }}
-      className="cursor-pointer hover:text-primary transition-colors duration-150 select-text break-words"
-      title="Click to expand/collapse"
-    >
-      {isExpanded ? value : `${value.substring(0, maxLength - 3)}...`}
-    </span>
+    <div className="flex flex-col">
+      <div 
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsExpanded(!isExpanded);
+        }}
+        className="cursor-pointer hover:text-primary transition-colors duration-150 select-text"
+        title="Click to expand/collapse"
+      >
+        {isExpanded ? (
+          <div className="max-h-24 overflow-y-auto break-words whitespace-pre-wrap select-text pr-1 border-l-2 border-primary/40 pl-2 py-0.5 mt-0.5 text-xs text-on-surface/80">
+            {value}
+          </div>
+        ) : (
+          <span className="truncate block max-w-full">
+            {value.substring(0, maxLength - 3)}...
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -487,7 +497,7 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
                       )}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-6 py-3.5 text-sm text-on-background/80 font-medium max-w-[220px] truncate">
+                        <td key={cell.id} className="px-6 py-3.5 text-sm text-on-background/80 font-medium max-w-[220px]">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </td>
                       ))}

@@ -6,6 +6,7 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:stress": "node tests/stress_test.js",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""
   },

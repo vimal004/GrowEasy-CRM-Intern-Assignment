@@ -924,24 +924,24 @@ else
   log_warn "Security: X-Frame-Options header missing"
 fi
 
-# 11.4 File upload size limit (228KB file → 500)
+# 11.4 File upload size limit (Truly oversized > 5MB file → 413)
 python3 -c "
-print('Name,Email,Phone')
-for i in range(5000):
-  print(f'Person {i},person{i}@example.com,{9876543200+i}')
-" > /tmp/large_5k.csv
+print('Name,Email,Phone,Note')
+for i in range(75000):
+  print(f'Person {i},person{i}@example.com,{9876543200+i},Lorem Ipsum is simply dummy text of the printing and typesetting industry.')
+" > /tmp/large_oversized.csv
 RESP=$(curl -s -w "\n%{http_code}" --max-time 30 -X POST \
-  -F "file=@/tmp/large_5k.csv" "$PREVIEW_URL" 2>/dev/null)
+  -F "file=@/tmp/large_oversized.csv" "$PREVIEW_URL" 2>/dev/null)
 STATUS=$(echo "$RESP" | tail -1)
-log_info "5000-row preview status: $STATUS"
+log_info "Oversized file preview status: $STATUS"
 if [ "$STATUS" = "413" ]; then
-  log_pass "File size: 413 returned for oversized file"
+  log_pass "File size: 413 returned for oversized file (> 5MB)"
 elif [ "$STATUS" = "200" ]; then
-  log_warn "File size: 5000-row file accepted (no size limit enforced)"
+  log_fail "File size: Oversized file accepted (size limit NOT enforced)"
 elif [ "$STATUS" = "500" ]; then
-  log_warn "File size: 500 error for 5000-row file (crash, not graceful 413)"
+  log_warn "File size: 500 error for oversized file (crash, not graceful 413)"
 else
-  log_info "File size: $STATUS for 5000-row file"
+  log_info "File size: $STATUS for oversized file"
 fi
 
 # ============================================================

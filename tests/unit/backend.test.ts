@@ -11,6 +11,10 @@ import {
 import { mapToCrmLead, RawExtractedLead } from '../../apps/api/src/services/crm/mapper';
 import { chunkArray } from '../../apps/api/src/services/ai/batch.service';
 import { mapRowHeaders } from '../../apps/api/src/services/csv/headerMapper';
+import { withRetry } from '../../apps/api/src/services/ai/retry.service';
+import { validateAndRepair } from '../../apps/api/src/services/ai/validation.service';
+import { runImportPipeline } from '../../apps/api/src/services/ai/ai.service';
+import { MockProvider } from '../../apps/api/src/services/ai/providers/mock.provider';
 
 
 test('CSV Parser - parseCsv', async () => {
@@ -176,4 +180,88 @@ test('Header Mapper - mapRowHeaders Name combination', () => {
   const mapped = mapRowHeaders(rawRow);
   assert.strictEqual(mapped.name, 'John Doe');
 });
+
+test('Retry Service - withRetry success on retry', async () => {
+  let attempts = 0;
+  const result = await withRetry(async () => {
+    attempts++;
+    if (attempts < 2) {
+      const err = new Error('Transient error');
+      (err as any).statusCode = 429;
+      throw err;
+    }
+    return 'success';
+  }, { maxRetries: 3, initialDelayMs: 1, backoffFactor: 2 });
+
+  assert.strictEqual(result, 'success');
+  assert.strictEqual(attempts, 2);
+});
+
+test('Retry Service - withRetry fails on non-retryable error', async () => {
+  let attempts = 0;
+  try {
+    await withRetry(async () => {
+      attempts++;
+      const err = new Error('Client error');
+      (err as any).statusCode = 400;
+      throw err;
+    }, { maxRetries: 3, initialDelayMs: 1, backoffFactor: 2 });
+    assert.fail('Should have thrown an error');
+  } catch (err: any) {
+    assert.strictEqual(err.message, 'Client error');
+    assert.strictEqual(attempts, 1);
+  }
+});
+
+test('Validation Service - validateAndRepair parsing and repair', async () => {
+  const provider = new MockProvider();
+  const repairPrompt = 'Repair this: {{errors}} and {{originalOutput}}';
+  const systemPrompt = 'System instructions';
+
+  const validJson = '[{"name": "Valid Name", "emails": ["valid@example.com"], "mobiles": ["9876543210"], "crm_status": "GOOD_LEAD_FOLLOW_UP", "data_source": "leads_on_demand"}]';
+  const results = await validateAndRepair(validJson, provider, repairPrompt, systemPrompt);
+  assert.strictEqual(results.length, 1);
+  assert.strictEqual(results[0].name, 'Valid Name');
+
+  const partialJson = '[{"name": "Partial Name", "emails": "sole@example.com"}]';
+  const coercedResults = await validateAndRepair(partialJson, provider, repairPrompt, systemPrompt);
+  assert.strictEqual(coercedResults.length, 1);
+  assert.deepStrictEqual(coercedResults[0].emails, ['sole@example.com']);
+  assert.deepStrictEqual(coercedResults[0].mobiles, []);
+});
+
+test('AI Service - runImportPipeline with Mock Provider', async () => {
+  const rawRecords = [
+    {
+      Name: 'John Test',
+      Email: 'test@example.com',
+      Phone: '9876543210',
+      Status: 'GOOD_LEAD_FOLLOW_UP',
+      Source: 'leads_on_demand',
+    },
+    {
+      Name: 'Invalid Test',
+      Email: '',
+      Phone: '',
+    }
+  ];
+
+  const result = await runImportPipeline(rawRecords);
+  assert.ok(result.metrics);
+  assert.ok(result.importedRecords);
+  assert.ok(result.skippedRecords);
+  assert.strictEqual(result.metrics.skippedCount, 1);
+  assert.strictEqual(result.skippedRecords[0].rowIndex, 2);
+  assert.strictEqual(result.metrics.importedCount, 1);
+  assert.strictEqual(result.importedRecords[0].name, 'John Test');
+});
+
+test('CRM Formatter - formatDate ambiguous dates', () => {
+  const formatted = formatDate('05/06/2026');
+  const date = new Date(formatted);
+  assert.strictEqual(date.getUTCFullYear(), 2026);
+  assert.strictEqual(date.getUTCMonth(), 5); // June is 5 (0-indexed)
+  assert.strictEqual(date.getUTCDate(), 5);
+});
+
 

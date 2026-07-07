@@ -92,8 +92,8 @@ export default function LeadImporterPage() {
       {/* Main stage content with exit/enter transitions */}
       <div className="relative min-h-[480px] w-full flex flex-col justify-start">
         {isLoadingPreview && (
-          <div className="absolute inset-0 bg-background/50 backdrop-blur-xs flex items-center justify-center z-30 rounded-3xl">
-            <div className="text-center space-y-4">
+          <div className="absolute inset-0 bg-background/90 backdrop-blur-md flex items-center justify-center z-30 rounded-3xl">
+            <div className="bg-surface/90 border border-border/40 p-8 rounded-3xl shadow-elevation3 text-center space-y-4 max-w-xs w-full mx-4">
               <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin mx-auto" />
               <p className="text-sm font-bold text-on-background">Parsing sheet layout...</p>
             </div>

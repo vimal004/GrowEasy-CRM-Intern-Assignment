@@ -19,20 +19,30 @@ function ExpandableCell({ value, maxLength = 50 }: ExpandableCellProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   
   if (value.length <= maxLength) {
-    return <span>{value}</span>;
+    return <span className="select-text break-words">{value}</span>;
   }
   
   return (
-    <span 
-      onClick={(e) => {
-        e.stopPropagation();
-        setIsExpanded(!isExpanded);
-      }}
-      className="cursor-pointer hover:text-primary transition-colors duration-150 select-text break-words"
-      title="Click to expand/collapse"
-    >
-      {isExpanded ? value : `${value.substring(0, maxLength - 3)}...`}
-    </span>
+    <div className="flex flex-col">
+      <div 
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsExpanded(!isExpanded);
+        }}
+        className="cursor-pointer hover:text-primary transition-colors duration-150 select-text"
+        title="Click to expand/collapse"
+      >
+        {isExpanded ? (
+          <div className="max-h-24 overflow-y-auto break-words whitespace-pre-wrap select-text pr-1 border-l-2 border-primary/40 pl-2 py-0.5 mt-0.5 text-xs text-on-surface/80">
+            {value}
+          </div>
+        ) : (
+          <span className="truncate block max-w-full">
+            {value.substring(0, maxLength - 3)}...
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -214,7 +224,7 @@ export function PreviewTable({ metadata, previewRows, onConfirm, onCancel }: Pre
 
           <div className="flex justify-between items-center text-xs text-on-surface/50 border-t border-border/40 pt-4">
             <span>Estimated AI mapping time:</span>
-            <span className="font-bold text-on-background">~ {Math.max(4, Math.round(metadata.rowCount / 15))} seconds</span>
+            <span className="font-bold text-on-background">~ {Math.max(1, Math.ceil(metadata.rowCount / 10) * 1.5).toFixed(1)} seconds</span>
           </div>
         </CardContent>
         <CardFooter className="flex items-center justify-between border-t border-border/10 mt-2 pt-4">
