@@ -65,7 +65,8 @@ function getFallbackProvider(primary: LLMProvider): LLMProvider | null {
 }
 
 // In-memory cache for LLM results to optimize processing speed and reduce API costs.
-const llmCache = new Map<string, RawExtractedLead>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes TTL
+const llmCache = new Map<string, { value: RawExtractedLead; expiresAt: number }>();
 
 function getRecordCacheKey(record: DeterministicLead): string {
   return JSON.stringify({
@@ -173,10 +174,14 @@ export async function runImportPipeline(
     // Check cache first
     llmRecords.forEach((entry) => {
       const key = getRecordCacheKey(entry.record);
-      if (llmCache.has(key)) {
+      const cached = llmCache.get(key);
+      if (cached && Date.now() < cached.expiresAt) {
         logger.debug(`[AIService] Cache hit for row ${entry.originalIndex + 1}. Skipping LLM call.`);
-        llmExtracted.push({ originalIndex: entry.originalIndex, lead: llmCache.get(key)! });
+        llmExtracted.push({ originalIndex: entry.originalIndex, lead: cached.value });
       } else {
+        if (cached) {
+          llmCache.delete(key); // Evict expired entry
+        }
         cacheMissEntries.push(entry);
       }
     });
@@ -227,7 +232,10 @@ export async function runImportPipeline(
         const extractedLead = llmResults[batchIdx];
         if (extractedLead) {
           const key = getRecordCacheKey(entry.record);
-          llmCache.set(key, extractedLead);
+          llmCache.set(key, {
+            value: extractedLead,
+            expiresAt: Date.now() + CACHE_TTL_MS,
+          });
           llmExtracted.push({ originalIndex: entry.originalIndex, lead: extractedLead });
         } else {
           logger.warn(`[AIService] LLM returned no result for batch index ${batchIdx} (original row ${entry.originalIndex + 1}). Skipping.`);
