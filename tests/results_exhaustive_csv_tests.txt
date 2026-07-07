@@ -11,7 +11,7 @@
  TEST GROUP 2: STANDARD FIELD IMPORT (tests/exhaustive_standard_fields.csv)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ℹ️  INFO: Uploading tests/exhaustive_standard_fields.csv to /import (AI Pipeline)...
-ℹ️  INFO: Request completed in 12.96 seconds.
+ℹ️  INFO: Request completed in 0.98 seconds.
 ✅ PASS: Standard import succeeded (HTTP 200)
 ℹ️  INFO: Metrics - Imported: 21, Skipped: 1, Success Rate: 95%
 ✅ PASS: Correctly imported 21 records
@@ -23,7 +23,7 @@
 ✅ PASS: Date parsed correctly for Epoch Date: 2026-05-14T08:30:48.000Z
 ✅ PASS: Date parsed correctly for Text Date: 2026-05-13T00:00:00.000Z
 ✅ PASS: Date parsed correctly for DD/MM/YYYY Date: 2026-05-13T00:00:00.000Z
-✅ PASS: Date fallback parsed successfully: 2026-07-07T16:18:31.186Z
+✅ PASS: Date fallback parsed successfully: 2026-07-07T17:32:55.446Z
 ✅ PASS: Status mapped correctly for 'Standard Lead': expected 'GOOD_LEAD_FOLLOW_UP', got 'GOOD_LEAD_FOLLOW_UP'
 ✅ PASS: Status mapped correctly for 'Fuzzy Status Good': expected 'GOOD_LEAD_FOLLOW_UP', got 'GOOD_LEAD_FOLLOW_UP'
 ✅ PASS: Status mapped correctly for 'Fuzzy Status DNC': expected 'DID_NOT_CONNECT', got 'DID_NOT_CONNECT'
@@ -42,7 +42,7 @@
  TEST GROUP 3: MESSY HEADER & MULTI-CONTACT VALIDATION (tests/exhaustive_messy_headers_contacts.csv)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ℹ️  INFO: Uploading tests/exhaustive_messy_headers_contacts.csv to /import (AI Pipeline)...
-ℹ️  INFO: Request completed in 0.34 seconds.
+ℹ️  INFO: Request completed in 4.22 seconds.
 ✅ PASS: Messy import succeeded (HTTP 200)
 ℹ️  INFO: Metrics - Imported: 5, Skipped: 1
 ✅ PASS: Correctly imported 5 records from messy CSV
@@ -82,7 +82,7 @@
  TEST GROUP 4: SECURITY & CORRUPTION STRESS VALIDATION (tests/exhaustive_security_format_corruption.csv)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ℹ️  INFO: Uploading tests/exhaustive_security_format_corruption.csv to /import (AI Pipeline)...
-ℹ️  INFO: Request completed in 0.37 seconds.
+ℹ️  INFO: Request completed in 0.35 seconds.
 ✅ PASS: Security import succeeded (HTTP 200)
 ✅ PASS: Correctly imported all 8 rows
 ✅ PASS: CSV Injection escaped for '=CMD(dangerous)' in name: ''=CMD(dangerous)'

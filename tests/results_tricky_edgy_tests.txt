@@ -1,0 +1,54 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TRICKY/EDGY DATA ROBUSTNESS TESTS: INITIAL VALIDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ PASS: Backend is healthy and reachable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TEST 1: CSV PARSING PREVIEW & HEADER NORMALIZATION (/api/upload)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ PASS: Preview request succeeded (HTTP 200)
+ℹ️  INFO: Preview Metadata: Row Count=17, Col Count=19
+✅ PASS: Preview detected exactly 17 data rows.
+✅ PASS: Preview detected exactly 19 headers.
+✅ PASS: All normalized headers preserved in metadata: ['c r e a t e d _ a t', 'E-M-A-I-L', 'm.o.b.i.l.e.', 'C_R_M_S_T_A_T_U_S', 'd a t a s o u r c e', 'Client Name', 'Company', 'City', 'State', 'Country', 'Owner', 'Note', 'Possession', 'Description', 'Col1', 'Col2', 'Col3', 'Col4', 'Col5']
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TEST 2: CRM FIELD NORMALIZATION & ROBUSTNESS PIPELINE (/api/import)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Import pipeline completed in 0.84 seconds.
+✅ PASS: Import request succeeded (HTTP 200)
+ℹ️  INFO: Metrics -> Imported: 15, Skipped: 2, Success Rate: 88%
+✅ PASS: Correctly imported exactly 15 records.
+✅ PASS: Correctly skipped exactly 2 records.
+✅ PASS: Skipped correct row indices (9 and 16).
+ℹ️  INFO: Skipped Row 16: Reason='Skipped row 16: contains neither a valid email nor mobile number.'
+ℹ️  INFO: Skipped Row 9: Reason='Skipped row 9: contains neither a valid email nor mobile number.'
+✅ PASS: Row 1 (Extreme Header User) imported successfully: Name='Extreme Header User', Email='header@example.com', Mobile='9999911111', Status='GOOD_LEAD_FOLLOW_UP', Source='leads_on_demand'
+✅ PASS: Row 1 mappings match expected values.
+✅ PASS: Row 2 (Microsecond Date) parsed correctly: created_at='2026-07-07T17:32:25.123Z'
+✅ PASS: Row 3 (Natural Date) parsed correctly: created_at='2026-07-07T23:02:00.000Z'
+✅ PASS: Row 4 (Two Digit Year Date) parsed correctly: created_at='2026-07-07T00:00:00.000Z'
+✅ PASS: Row 6 (Invalid Date Fallback) parsed to valid date: created_at='0123-01-01T00:00:00.000Z'
+✅ PASS: Row 7 extracted first email correctly: 'first@test.com'
+✅ PASS: Row 7 extracted first phone number correctly: '9876543210'
+✅ PASS: Row 7 appended extra contacts to crm_note successfully.
+✅ PASS: Row 8 imported with valid email.
+✅ PASS: Row 8 cleared the oversized phone number (>15 digits) successfully.
+✅ PASS: Row 11 (Injection payloads) imported without server crash.
+✅ PASS: Row 11 preserved single quote name safely: 'O'Connor -- test'
+✅ PASS: Row 11 preserved HTML company safely: '<b>Bold Company</b>'
+✅ PASS: Row 12 mapped 'phone busy call again later' -> 'DID_NOT_CONNECT'
+✅ PASS: Row 13 (no match status) fell back to empty string: ''
+✅ PASS: Row 14 mapped 'sarjapur plot' -> 'sarjapur_plots'
+✅ PASS: Row 15 (no match source) fell back to empty string: ''
+✅ PASS: Row 17 (Huge columns) parsed extra columns into metadata notes: 'Original Note: Note 17 | Metadata: [Col1: Val1, Col2: Val2, Col3: Val3, Col4: Val4, Col5: Val5]'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FINAL TEST REPORT SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Total Assertions Checked: 28
+ℹ️  INFO: Passed Assertions: 28
+ℹ️  INFO: Failed Assertions: 0
+ℹ️  INFO: Warnings: 0
+ℹ️  INFO: Assertion Pass Rate: 100.0%
