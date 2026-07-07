@@ -111,7 +111,7 @@ export function UploadDropzone({ onFileAccepted }: UploadDropzoneProps) {
           tabIndex={0}
           role="button"
           aria-label="Upload CSV Lead File"
-          className={`relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-300 ease-emphasized cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-4 select-none ${
+          className={`relative border border-dashed rounded-3xl p-12 text-center transition-all duration-300 ease-emphasized cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-4 select-none ${
             isDragActive
               ? 'border-primary bg-primary-container/10 scale-[1.01] shadow-elevation1'
               : 'border-border hover:border-primary/50 hover:bg-on-background/5'

@@ -22,20 +22,20 @@
 
 .dark {
   --primary: #A8C7FA;
-  --primary-container: #0842A0;
-  --on-primary-container: #D3E3FD;
+  --primary-container: #0c2b54;
+  --on-primary-container: #d2e4ff;
 
-  --background: #0F1217;
-  --surface: #1E232A;
-  --on-surface: #E3E3E3;
-  --on-background: #E3E3E3;
+  --background: #08090a;
+  --surface: #101215;
+  --on-surface: #e1e3e6;
+  --on-background: #f0f2f5;
 
-  --success: #34A853;
-  --warning: #FBBC04;
-  --error: #EA4335;
-  --border: #2C323D;
+  --success: #34a853;
+  --warning: #fbbc04;
+  --error: #ea4335;
+  --border: rgba(255, 255, 255, 0.08);
 
-  --shadow-color: rgba(0, 0, 0, 0.35);
+  --shadow-color: rgba(0, 0, 0, 0.6);
 }
 
 @layer base {
