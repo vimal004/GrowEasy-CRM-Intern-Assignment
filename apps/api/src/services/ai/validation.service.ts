@@ -55,10 +55,16 @@ export async function validateAndRepair(
   try {
     // If output has multiple outer brackets or is wrapped in key like { "leads": [...] }
     parsed = JSON.parse(cleaned);
-    if (parsed && !Array.isArray(parsed) && Array.isArray(parsed.leads)) {
-      parsed = parsed.leads;
-    } else if (parsed && !Array.isArray(parsed) && Array.isArray(parsed.data)) {
-      parsed = parsed.data;
+    
+    // Auto-detect and unwrap array wrapped inside an object
+    if (parsed && !Array.isArray(parsed)) {
+      const arrayKey = Object.keys(parsed).find(key => Array.isArray(parsed[key]));
+      if (arrayKey) {
+        parsed = parsed[arrayKey];
+      } else if (parsed.name || parsed.email || parsed.emails || parsed.mobiles || parsed.mobile_without_country_code) {
+        // Single lead object returned instead of an array
+        parsed = [parsed];
+      }
     }
 
     // Robust unwrapping of nested arrays (LLM hallucination protection)
