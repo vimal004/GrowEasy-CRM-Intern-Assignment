@@ -59,7 +59,9 @@ export function mapToCrmLead(
   }
 
   // Enforce skip: Skip rows containing no email AND no mobile phone number
-  const hasEmail = firstEmail !== '';
+  // Safety-net: also validate email format (must contain @ and a domain with a dot)
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const hasEmail = firstEmail !== '' && isValidEmail(firstEmail);
   const hasMobile = cleanMobile !== '';
 
   if (!hasEmail && !hasMobile) {

@@ -13,7 +13,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 BASE_URL = "https://groweasy-crm-api.onrender.com/api"
 
 GREEN = '\033[0;32m'
-RED = '\033[0;31m'
+RED = '\033[0;31m'w
 YELLOW = '\033[1;33m'
 BLUE = '\033[0;34m'
 CYAN = '\033[0;36m'

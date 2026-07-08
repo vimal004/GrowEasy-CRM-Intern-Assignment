@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { ImportResult, LeadCrm } from '@groweasy/shared';
+import { ImportResult, LeadCrm, DATA_SOURCES } from '@groweasy/shared';
 import { LLMProvider } from './providers/provider.interface';
 import { OpenAIProvider } from './providers/openai.provider';
 import { GeminiProvider } from './providers/gemini.provider';
@@ -108,6 +108,74 @@ function deterministicToRaw(lead: DeterministicLead): RawExtractedLead {
 }
 
 /**
+ * Enriches a fast-path RawExtractedLead by scanning description, notes, and
+ * unmapped data for CRM fields that the deterministic header mapper couldn't
+ * identify from column names alone (e.g. data_source inferred from description
+ * text, or possession_time embedded in a generic 'Extra' column).
+ *
+ * This closes the gap where rows with valid contacts bypass the LLM entirely,
+ * missing metadata that only appears in free-text or unmapped columns.
+ */
+function enrichFastPathLead(lead: RawExtractedLead): RawExtractedLead {
+  // ─── 1. Extract data_source from description / notes / unmapped values ─────
+  if (!lead.data_source) {
+    // Build a combined text corpus from all free-text fields
+    const textParts: string[] = [];
+    if (lead.description) textParts.push(lead.description);
+    if (lead.crm_note) textParts.push(lead.crm_note);
+    if (lead.unmapped_data) {
+      for (const v of Object.values(lead.unmapped_data)) {
+        if (v) textParts.push(v);
+      }
+    }
+    const corpus = textParts.join(' ').toLowerCase();
+
+    // Check each known data source — convert underscore-separated names to
+    // space-separated patterns for natural-language matching
+    for (const src of DATA_SOURCES) {
+      const pattern = src.replace(/_/g, ' ');
+      if (corpus.includes(pattern)) {
+        lead.data_source = src;
+        logger.debug(`[AIService] Fast-path enrichment: extracted data_source='${src}' from text.`);
+        break;
+      }
+    }
+  }
+
+  // ─── 2. Extract possession_time from unmapped values ───────────────────────
+  if (!lead.possession_time && lead.unmapped_data) {
+    for (const [key, value] of Object.entries(lead.unmapped_data)) {
+      if (!value) continue;
+      const lowerVal = value.toLowerCase();
+      const lowerKey = key.toLowerCase();
+
+      // Skip values that look like key=value metadata (e.g. "possession_time=Dec 2027")
+      if (/^[a-z_]+=/.test(lowerVal)) continue;
+
+      // Match values like "Possession Dec 2027" (standalone word followed by a space + date)
+      const possessionMatch = value.match(/^possession\s+(.+)$/i);
+      if (possessionMatch) {
+        const extracted = possessionMatch[1].trim();
+        if (extracted) {
+          lead.possession_time = extracted;
+          // Move the consumed value out of unmapped so it doesn't duplicate in crm_note
+          delete lead.unmapped_data[key];
+          logger.debug(`[AIService] Fast-path enrichment: extracted possession_time='${extracted}' from unmapped key '${key}'.`);
+          break;
+        }
+      } else if (lowerKey.includes('possession') && !lowerKey.includes('=')) {
+        lead.possession_time = value.trim();
+        delete lead.unmapped_data[key];
+        logger.debug(`[AIService] Fast-path enrichment: extracted possession_time='${value.trim()}' from key '${key}'.`);
+        break;
+      }
+    }
+  }
+
+  return lead;
+}
+
+/**
  * Runs the complete AI Lead Import pipeline on an array of raw CSV rows.
  * 
  * @param rawRecords The raw CSV rows parsed from the input file.
@@ -155,8 +223,9 @@ export async function runImportPipeline(
     const hasMobile = record.mobiles.length > 0;
 
     if (hasEmail || hasMobile) {
-      // Already mapped — convert deterministically, no LLM needed
-      fastPathLeads.push({ originalIndex: index, lead: deterministicToRaw(record) });
+      // Already mapped — convert deterministically then enrich from free-text fields
+      const rawLead = enrichFastPathLead(deterministicToRaw(record));
+      fastPathLeads.push({ originalIndex: index, lead: rawLead });
     } else {
       // No contacts found yet — send to LLM to extract from notes/description
       llmRecords.push({ originalIndex: index, record });

@@ -1,0 +1,104 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CONNECTIVITY & HEALTH CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ PASS: Backend health endpoint responded successfully: {"status":"UP","timestamp":"2026-07-08T08:01:52.172Z"}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TEST 1: UPLOAD & PREVIEW (NO AI MAPPING)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ PASS: Preview request succeeded (HTTP 200)
+ℹ️  INFO: Preview Metadata: Row Count=5, Col Count=8
+ℹ️  INFO: Headers: ['Lead', 'Emails', 'Phones', 'Notes', 'Expected', 'Country', 'Description', 'Extra']
+ℹ️  INFO: Received 5 preview rows.
+ℹ️  INFO:   Row 1: {'Lead': 'Alice', 'Emails': 'alice@a.com;alice@b.com', 'Phones': '+1 5551112222, +1 5553334444', 'Notes': 'VIP', 'Expected': 'email=alice@a.com;mobile=5551112222;crm_note contains alice@b.com,+1 5553334444,VIP', 'Country': '', 'Description': '', 'Extra': ''}
+ℹ️  INFO:   Row 2: {'Lead': 'Bob', 'Emails': '', 'Phones': '044-23456789', 'Notes': '', 'Expected': 'country_code blank or inferred;mobile=04423456789', 'Country': 'India', 'Description': '', 'Extra': ''}
+ℹ️  INFO:   Row 3: {'Lead': 'Carol', 'Emails': 'bademail', 'Phones': 'notaphone', 'Notes': '', 'Expected': 'SKIP', 'Country': '', 'Description': '', 'Extra': ''}
+ℹ️  INFO:   Row 4: {'Lead': 'Dan', 'Emails': 'dan@test.com', 'Phones': '', 'Notes': '', 'Expected': 'data_source=meridian_tower;description retained', 'Country': '', 'Description': 'Needs villa in Meridian Tower', 'Extra': ''}
+ℹ️  INFO:   Row 5: {'Lead': 'Eva', 'Emails': 'eva@test.com', 'Phones': '9876543210', 'Notes': '', 'Expected': 'possession_time=Dec 2027', 'Country': '', 'Description': '', 'Extra': 'Possession Dec 2027'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TEST 2: AI IMPORT & NORMALIZATION PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Import pipeline completed in 0.36 seconds.
+✅ PASS: Import request succeeded (HTTP 200)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METRICS SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Total Uploaded Records: 5
+ℹ️  INFO: Imported Count: 5
+ℹ️  INFO: Skipped Count: 0
+ℹ️  INFO: Success Rate: 100%
+ℹ️  INFO: Processing Time: 2 ms
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ IMPORTED RECORDS ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: --- Record 1 (Name: Alice) ---
+ℹ️  INFO:   created_at: '2026-07-08T08:01:52.929Z'
+ℹ️  INFO:   name: 'Alice'
+ℹ️  INFO:   email: 'alice@a.com'
+ℹ️  INFO:   country_code: '+91'
+ℹ️  INFO:   mobile_without_country_code: '15551112222'
+ℹ️  INFO:   crm_note: 'Extra Emails: alice@b.com | Extra Phones: +1 5553334444 | Original Note: VIP | Metadata: [Expected: email=alice@a.com;mobile=5551112222;crm_note contains alice@b.com,+1 5553334444,VIP]'
+ℹ️  INFO: --- Record 2 (Name: Bob) ---
+ℹ️  INFO:   created_at: '2026-07-08T08:01:52.929Z'
+ℹ️  INFO:   name: 'Bob'
+ℹ️  INFO:   country_code: '+91'
+ℹ️  INFO:   mobile_without_country_code: '04423456789'
+ℹ️  INFO:   country: 'India'
+ℹ️  INFO:   crm_note: 'Metadata: [Expected: country_code blank or inferred;mobile=04423456789]'
+ℹ️  INFO: --- Record 3 (Name: Carol) ---
+ℹ️  INFO:   created_at: '2026-07-08T08:01:52.929Z'
+ℹ️  INFO:   name: 'Carol'
+ℹ️  INFO:   email: 'bademail'
+ℹ️  INFO:   country_code: '+91'
+ℹ️  INFO:   crm_note: 'Metadata: [Expected: SKIP]'
+ℹ️  INFO: --- Record 4 (Name: Dan) ---
+ℹ️  INFO:   created_at: '2026-07-08T08:01:52.929Z'
+ℹ️  INFO:   name: 'Dan'
+ℹ️  INFO:   email: 'dan@test.com'
+ℹ️  INFO:   country_code: '+91'
+ℹ️  INFO:   crm_note: 'Metadata: [Expected: data_source=meridian_tower;description retained]'
+ℹ️  INFO:   description: 'Needs villa in Meridian Tower'
+ℹ️  INFO: --- Record 5 (Name: Eva) ---
+ℹ️  INFO:   created_at: '2026-07-08T08:01:52.929Z'
+ℹ️  INFO:   name: 'Eva'
+ℹ️  INFO:   email: 'eva@test.com'
+ℹ️  INFO:   country_code: '+91'
+ℹ️  INFO:   mobile_without_country_code: '9876543210'
+ℹ️  INFO:   crm_note: 'Metadata: [Expected: possession_time=Dec 2027, Extra: Possession Dec 2027]'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SKIPPED RECORDS ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ASSERTION VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Verifying Alice...
+✅ PASS: Alice: email correctly set to 'alice@a.com'
+✅ PASS: Alice: mobile correctly set to '15551112222' (injected first phone)
+✅ PASS: Alice: secondary contact info and note VIP found in crm_note
+ℹ️  INFO: Verifying Bob...
+✅ PASS: Bob: mobile correctly parsed to '04423456789'
+✅ PASS: Bob: country correctly set to 'India'
+❌ FAIL: Carol: was imported when she should have been skipped! Record: {'created_at': '2026-07-08T08:01:52.929Z', 'name': 'Carol', 'email': 'bademail', 'country_code': '+91', 'mobile_without_country_code': '', 'company': '', 'city': '', 'state': '', 'country': '', 'lead_owner': '', 'crm_status': '', 'crm_note': 'Metadata: [Expected: SKIP]', 'data_source': '', 'possession_time': '', 'description': ''}
+ℹ️  INFO: Verifying Dan...
+✅ PASS: Dan: email correctly set to 'dan@test.com'
+❌ FAIL: Dan: data_source got '', expected 'meridian_tower'
+✅ PASS: Dan: description successfully retained.
+ℹ️  INFO: Verifying Eva...
+✅ PASS: Eva: email correctly set to 'eva@test.com'
+✅ PASS: Eva: mobile correctly set to '9876543210'
+⚠️  WARN: Eva: possession_time got '', expected 'Dec 2027'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FINAL SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️  INFO: Total Assertions Checked: 15
+ℹ️  INFO: Passed Assertions: 12
+ℹ️  INFO: Failed Assertions: 2
+ℹ️  INFO: Warnings: 1
+ℹ️  INFO: Pass Rate: 80.0%

@@ -5,6 +5,15 @@ function normalizeKey(key: string): string {
   return key.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+/**
+ * Basic email format validation.
+ * Checks for a non-empty local part, an '@' symbol, and a domain with at least one dot.
+ * This prevents bare strings like 'bademail' from being treated as valid contact info.
+ */
+function isLikelyEmail(str: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
+}
+
 export interface DeterministicLead {
   created_at: string;
   name: string;
@@ -76,8 +85,8 @@ export function mapRowHeaders(row: Record<string, string>): DeterministicLead {
       normKey === 'workmail' ||
       normKey === 'workemail'
     ) {
-      // Split comma/semicolon separated list
-      const splitEmails = val.split(/[,;\s]+/).map(e => e.trim()).filter(Boolean);
+      // Split comma/semicolon separated list and validate format
+      const splitEmails = val.split(/[,;\s]+/).map(e => e.trim()).filter(Boolean).filter(isLikelyEmail);
       lead.emails.push(...splitEmails);
     }
     // 2. Match Mobile/Phone
